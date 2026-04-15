@@ -2,7 +2,7 @@
 
 import React from 'react';
 import RangeCounter from '../../../../RangeCounter';
-import useLocalStorage from 'use-local-storage';
+import { useLocalStorage } from '../../../../../hooks/useLocalStorage';
 
 function PlayerNumberFilter({ onClear = () => {}, onChange = () => {}, currentValue = null}) {
     console.log(currentValue)

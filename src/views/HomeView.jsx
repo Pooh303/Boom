@@ -2,11 +2,10 @@ import { useContext, useState, useEffect, useMemo, useCallback } from "react";
 
 import { toast } from "react-hot-toast";
 
-import { Peer } from "peerjs";
-import { constructPeerID, getPeerConfig } from "../helpers/peerid";
+import supabase from "../supabase";
 
 
-import { isIOS, isIOS13, isMacOs, isSafari, isMobileSafari } from "react-device-detect";
+
 
 
 
@@ -33,17 +32,17 @@ import { CardsRow } from "../components/playsets/PlaysetDisplay";
 import { getCardFromId } from "../helpers/cards";
 import ContributeLinks from "../components/ContributeLinks";
 import { UserAvatar } from "../components/UserAvatars";
-import supabase from "../supabase";
+// import supabase from "../supabase"; // Already imported above
 import MegaButton from "../components/MegaButtons";
 import { IoPersonCircleOutline, IoPhonePortraitOutline } from "react-icons/io5";
 import { TbCardsFilled } from "react-icons/tb";
 import { CgCardDiamonds } from "react-icons/cg";
 import { FaMoneyBill, FaTools } from "react-icons/fa";
-import BringJesusIntoIt from "../components/BringJesusIntoIt";
-import PaymentInfo from "../components/PaymentInfo";
+import AboutGame from "../components/AboutGame";
 import InfoBanner from "../components/InfoBanner";
 import { FiExternalLink } from "react-icons/fi";
-
+import { useTranslation } from "../config/i18n";
+import LanguageToggle from "../components/LanguageToggle";
 
 
 const isBeta = import.meta.env.VITE_BETA || false;
@@ -53,6 +52,7 @@ function HomeView({ }) {
 
 
     let [searchParams, setSearchParams] = useSearchParams();
+    const { t } = useTranslation();
 
 
 
@@ -65,80 +65,33 @@ function HomeView({ }) {
     const [lastPlayer, setLastPlayer] = useState(null);
 
 
-    const [displayUseSafari, setDisplayUseSafari] = useState(false)
 
 
-    const [joinPeer, setJoinPeer] = useState();
-    const [createPeer, setCreatePeer] = useState();
+
+
 
 
     // const testPeer = new Peer();
 
 
 
-    async function initPeers() {
-        const joinPeer = new Peer(await getPeerConfig());
-        const createPeer = new Peer(await getPeerConfig());
-        setJoinPeer(joinPeer);
-        setCreatePeer(createPeer);
-    }
+
 
 
 
     useEffect(() => {
-
-
-        initPeers();
-
-
-        // safari
-
-        const isSafariLocal = JSON.parse(localStorage.getItem("issafari"));
-
-        console.log(isSafariLocal)
-        if (isSafariLocal) {
-            setDisplayUseSafari(true);
-        } else if (isSafariLocal === false) {
-
-        } else {
-            if ((isIOS || isIOS13 || isMacOs) && (!(isSafari && isMobileSafari))) {
-                setDisplayUseSafari(true);
-                localStorage.setItem("issafari", "true")
-            } else {
-                localStorage.setItem("issafari", "false")
-
-            }
-        }
-
-
-
-
-
-        // setTimeout(() => getLastPlayer(), 250)
-
-        // setInterval(() => getLastPlayer(), 5 * 1000)
-
-
-
-
-
-
         // join Room based on query in url
-
         const c = searchParams.get("c");
         if (c) {
             setTimeout(() => {
-
-                document.getElementById("room-input").value = c.toUpperCase();
-
+                const input = document.getElementById("room-input");
+                if (input) input.value = c.toUpperCase();
                 setTimeout(() => {
-
-                    document.getElementById("join_btn").click();
-                }, 500)
-            }, 500)
+                    const btn = document.getElementById("join_btn");
+                    if (btn) btn.click();
+                }, 500);
+            }, 500);
         }
-
-
 
         // dev mode toggle
         const dev = searchParams.get("dev");
@@ -147,9 +100,7 @@ function HomeView({ }) {
             setDevMode(JSON.parse(dev));
             setTimeout(() => redirect("/"), 100);
         }
-
-
-    }, [])
+    }, [searchParams])
 
 
 
@@ -212,25 +163,9 @@ function HomeView({ }) {
 
 
 
-        const connToRoom = joinPeer.connect(constructPeerID(code, "host"));
-        console.log(connToRoom)
-        setLoading(true);
-        connToRoom?.on("open", () => {
-            setPrompt({ element: <NamePrompt onEnter={setNameAndJoin} buttonValue="JOIN" /> })
-
-            setLoading(false)
-            connToRoom.close();
-        })
-
-
-
-
-        joinPeer.on("error", (err) => {
-            console.log(err)
-            toast.error("Error");
-            setPrompt(null);
-            setLoading(false)
-        })
+        // Instead of pinging via PeerJS, we now just proceed to the Lobby.
+        // The Lobby will handle detecting if a host is actually present on the Supabase channel.
+        setPrompt({ element: <NamePrompt onEnter={setNameAndJoin} buttonValue={t("join")} /> })
 
 
 
@@ -257,7 +192,7 @@ function HomeView({ }) {
 
             localStorage.setItem(`player-${code}`, JSON.stringify({
                 name,
-                id: playerData?.id,
+                id: playerData?.id || idGenAlphabet(6),
                 userId: user?.id
             }));
 
@@ -270,13 +205,13 @@ function HomeView({ }) {
 
 
 
-    }, [joinPeer, user?.id])
+    }, [user?.id])
 
     const createRoom = useCallback(async () => {
 
 
 
-        setPrompt({ element: <NamePrompt onEnter={setNameAndCreate} buttonValue="CREATE" /> })
+        setPrompt({ element: <NamePrompt onEnter={setNameAndCreate} buttonValue={t("create")} /> })
 
 
         async function setNameAndCreate(name) {
@@ -284,50 +219,30 @@ function HomeView({ }) {
 
 
 
+            // Generate a code and move to the lobby. 
+            // The Lobby will initialize as Host since localStorage `game-{code}` will be set.
             const code = idGenAlphabet();
 
-
-
-            const connToRoom = createPeer.connect(constructPeerID(code, "board"));
-            setLoading(true);
-            connToRoom.on("open", () => {
-                toast.error("Error");
-                setPrompt(null);
-                connToRoom.close();
-            })
-
-
-            createPeer.on("error", (err) => {
-
-                // removes all host-{code} from localStorage
-                const all = allLocalStorage();
-                for (let i = 0; i < all.length; i++) {
-                    const element = all[i];
-                    if (element.key.startsWith("game-")) {
-                        localStorage.removeItem(element.key)
-                        // remove host player info
-                        const code = element.key.split("-")[1];
-                        localStorage.removeItem(`player-${code?.toUpperCase()}`)
-
-                    }
-
-
+            // Clear previous host state if any exists
+            const all = allLocalStorage();
+            for (let i = 0; i < all.length; i++) {
+                const element = all[i];
+                if (element.key.startsWith("game-")) {
+                    localStorage.removeItem(element.key)
+                    const oldCode = element.key.split("-")[1];
+                    localStorage.removeItem(`player-${oldCode?.toUpperCase()}`)
                 }
+            }
 
-
-                localStorage.setItem(`game-${code}`, "{}");
-                localStorage.setItem(`player-${code}`, JSON.stringify({
-                    name,
-                    id: "HOST"
-                }));
-                setPrompt(null);
-                redirect(`/lobby/${code}`, { replace: true });
-            })
-
+            localStorage.setItem(`game-${code}`, "{}");
+            localStorage.setItem(`player-${code}`, JSON.stringify({
+                name,
+                id: "HOST"
+            }));
+            setPrompt(null);
+            redirect(`/lobby/${code}`, { replace: true });
         }
-
-
-    }, [createPeer])
+    }, [])
 
 
 
@@ -360,16 +275,19 @@ function HomeView({ }) {
     return (
         <div className="flex flex-col justify-start items-center scrollbar-hide h-full w-full gap-4 overflow-y-scroll overflow-x-hidden pb-24">
 
-            {(displayUseSafari || devMode) && <div className="w-full max-w-2xl p-4 gap-4 flex flex-col items-center pb-0">
-                {displayUseSafari && <UseSafariBanner />}
-                {devMode && <DevModeBanner />}
+            {devMode && <div className="w-full max-w-2xl p-4 gap-4 flex flex-col items-center pb-0">
+                <DevModeBanner />
             </div>}
 
 
             <div className="text-title font-bold text-3xl sm:text-4xl md:text-6xl my-4 pt-4 text-primary relative w-full max-w-2xl flex items-center justify-center">
-                <div className="flex flex-col items-center relative" onClick={clickDev}>
+                <div className="top-0 left-0 z-50 p-4 pt-1 flex items-center justify-center absolute">
+                    <LanguageToggle />
+                </div>
+
+                <div className="flex flex-col items-center relative leading-none" onClick={clickDev}>
                     KABOOM
-                    <span className="text-neutral text-normal text-xs font-light">Adaptation of Two Rooms and a Boom&trade;</span>
+                    <span className="text-neutral text-normal text-[0.65rem] md:text-xs font-light mt-1 uppercase tracking-wider">Adaptation of Two Rooms and a Boom&trade;</span>
                     {/* {isBeta && <div className="absolute text-sm md:text-base text-secondary-content bg-secondary rounded-lg px-3 md:px-4 py-1.5 md:py-2 -rotate-12 right-2 sm:right-0 md:-right-4 bottom-0 animate-pulse">
                         BETA
                     </div>} */}
@@ -410,11 +328,11 @@ function HomeView({ }) {
 
             <div className="flex w-full flex-col items-center gap-8 scrollbar-hide">
                 <Box>
-                    <h1 className="text-2xl">Join Game</h1>
+                    <h1 className="text-2xl">{t("join_game")}</h1>
                     <input autoComplete="off" id="room-input" type="text" max={4} maxLength={4} className="input skew-reverse text-center font-extrabold text-xl text-normal tracking-widest text-black w-fit px-0 bg-accent-content" placeholder="&#x2022; &#x2022; &#x2022; &#x2022;" onChange={(e) => (e?.target?.value?.length <= 4 ? e.target.value = e.target.value.toUpperCase() : e.target.value = e.target.value.substring(0, 4))} />
-                    <button id="join_btn" className={"btn transition-all bg-secondary " + (loading ? " text-primary-content btn-wide opacity-75 outline-none border-none " : " btn-secondary opacity-100 btn-wide ")} onClick={() => joinRoom()}>{loading ? <span className="loading loading-spinner "></span> : "JOIN"}</button>
+                    <button id="join_btn" className={"btn transition-all bg-secondary " + (loading ? " text-primary-content btn-wide opacity-75 outline-none border-none " : " btn-secondary opacity-100 btn-wide ")} onClick={() => joinRoom()}>{loading ? <span className="loading loading-spinner "></span> : t("join")}</button>
                     <div className="mx-12 max-w-sm my-2.5 py-[0.05rem] bg-neutral-content w-full rounded-full"></div>
-                    <button type="button" className={"btn transition-all bg-primary " + (loading ? " bg-primary text-primary-content btn-wide outline-none border-none " : " btn-primary opacity-100 btn-wide ")} onClick={() => createRoom()}>CREATE GAME</button>
+                    <button type="button" className={"btn transition-all bg-primary " + (loading ? " bg-primary text-primary-content btn-wide outline-none border-none " : " btn-primary opacity-100 btn-wide ")} onClick={() => createRoom()}>{t("create_game")}</button>
 
                 </Box>
             </div>
@@ -425,29 +343,20 @@ function HomeView({ }) {
                     <MegaButton onClick={() => {
                         smoothNavigate("/playsets")
                     }} Icon={<BsCassetteFill />} fill color={"#c342ff"}>
-                        Playsets
+                        {t("playsets")}
                     </MegaButton>
                     <MegaButton onClick={() => {
                         smoothNavigate("/cards")
                     }} Icon={<TbCardsFilled />} fill color={"#3b82f6"}>
-                        Cards
+                        {t("cards")}
                     </MegaButton>
-                    <MegaButton onClick={() => {
-                        window.location.href = "TwoRooms_Rulebook_v3.pdf";
-                    }} Icon={<BsBook />} fill color={"#27d62a"}>
-                        Rules
-                    </MegaButton>
-                    {/* <MegaButton onClick={() => {
-                        smoothNavigate("/")
-                    }} Icon={<IoPersonCircleOutline />} fill color={"#ff0000"}>
-                        Profile
-                    </MegaButton> */}
-                    <a target="_blank" href="https://www.buymeacoffee.com/lukas.fish">
+                    <div className="col-span-2">
                         <MegaButton onClick={() => {
-                        }} Icon={<FaMoneyBill />} fill color={"#ff0000"}>
-                            Donate
+                            window.location.href = "TwoRooms_Rulebook_v3.pdf";
+                        }} Icon={<BsBook />} fill color={"#27d62a"}>
+                            {t("rules")}
                         </MegaButton>
-                    </a>
+                    </div>
                 </div>
 
 
@@ -457,19 +366,21 @@ function HomeView({ }) {
 
 
 
-                <h2 className="font-bold flex flex-wrap w-full max-w-2xl px-4 items-center justify-center text-center text-lg mb-12">This game is meant to be played in person, with your phones <IoPhonePortraitOutline /> = <CgCardDiamonds /></h2>
+                <h2 className="font-bold flex flex-wrap w-full max-w-2xl px-4 items-center justify-center text-center text-lg mb-12">{t("disclaimer")} <IoPhonePortraitOutline className="ml-1" /> = <CgCardDiamonds className="ml-1" /></h2>
 
                 <LinkToTwoRoomsBox />
 
-                <div className="px-4 w-full"><BringJesusIntoIt /></div>
-
-                {/* <div className="px-4 w-full"><PaymentInfo /></div> */}
+                <div className="px-4 w-full mt-6"><AboutGame /></div>
 
 
                 <ContributeLinks />
             </div>
 
-            <div className="flex justify-center w-full items-center text-xs text-gray-500 py-4"><div className="text-center">This work is <a className="underline" href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode" target="_blank">licensed</a> under the<br /><a className="underline" href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">Creative Commons license BY-NC-SA 4.0.</a><br /><a href="/privacy" target="_blank" className="underline">Privacy</a></div></div>
+            <div className="flex justify-center w-full items-center text-xs text-gray-500 py-4">
+                <div className="text-center font-bold uppercase tracking-widest gap-2 flex items-center opacity-50">
+                    Made with ❤️ for the community
+                </div>
+            </div>
 
 
 
@@ -481,7 +392,7 @@ function HomeView({ }) {
 export function ProfilePictureAndMenu() {
 
     const { user, logout, showLoginMenu, smoothNavigate } = useContext(PageContext);
-
+    const { t } = useTranslation();
 
     return (
         <div className="text-3xl flex items-center justify-center clickable text-primary">
@@ -491,13 +402,13 @@ export function ProfilePictureAndMenu() {
                 <div className="dropdown dropdown-end z-[1000]  " >
                     <label tabIndex={0} className="rounded-full "><UserAvatar profile={user} className={"h-8  w-8 "} /></label>
                     <ul tabIndex={0} className="dropdown-content  menu p-2 shadow bg-base-100 rounded-box w-52 text-base font-normal text-base-content text-normal" >
-                        {/* <li><button onClick={() => smoothNavigate(`/profile/${user?.id}`)}>Profile</button></li> */}
+                        {/* <li><button onClick={() => smoothNavigate(`/profile/${user?.id}`)}>{t("profile")}</button></li> */}
                         <li><button onClick={(e) => {
                             e.stopPropagation();
                             e.nativeEvent.stopImmediatePropagation();
                             e.nativeEvent.stopPropagation();
                             logout()
-                        }}>Logout</button></li>
+                        }}>{t("logout")}</button></li>
                     </ul>
                 </div>
             }
@@ -520,7 +431,7 @@ function Box({ children }) {
 
 export function NamePrompt({ onEnter, buttonValue }) {
     const { setPrompt } = useContext(PageContext);
-
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState("");
 
@@ -540,10 +451,10 @@ export function NamePrompt({ onEnter, buttonValue }) {
     return (
         <div className="w-full flex flex-col justify-start items-center gap-4">
 
-            {name && name != "" ? <Avatar style={{ height: "3rem", width: "3rem" }} className="" {...avaConfig} /> : <h1 className="text-title text-2xl font-extrabold h-12 flex items-center">Name</h1>}
-            <input autoFocus={true} id="name-input-element" type="text" placeholder="Name" className="skew input text-center font-extrabold text-xl text-normal text-accent-content w-fit px-0 bg-neutral " onChange={(e) => { e.target.value = e.target.value.trimStart(); setName(e.target.value.trimStart()) }} />
+            {name && name != "" ? <Avatar style={{ height: "3rem", width: "3rem" }} className="" {...avaConfig} /> : <h1 className="text-title text-2xl font-extrabold h-12 flex items-center">{t("name")}</h1>}
+            <input autoFocus={true} id="name-input-element" type="text" placeholder={t("name")} className="skew input text-center font-extrabold text-xl text-normal text-accent-content w-fit px-0 bg-neutral " onChange={(e) => { e.target.value = e.target.value.trimStart(); setName(e.target.value.trimStart()) }} />
             <div className="flex justify-end items-center w-full gap-1">
-                <button onClick={() => setPrompt(null)} className={"btn  text-title scale-50 " + (loading ? " hidden " : " btn-ghost ")}>CANCEL</button>
+                <button onClick={() => setPrompt(null)} className={"btn  text-title scale-50 " + (loading ? " hidden " : " btn-ghost ")}>{t("cancel")}</button>
                 <button className={"btn text-title scale-50 " + (loading ? " btn-disabled " : " btn-primary ")} onClick={() => click()} >{loading ? <span className="loading loading-spinner"></span> : buttonValue}</button>
             </div>
         </div>
@@ -569,15 +480,6 @@ export function DevModeBanner({ size, noButton = false, text }) {
 }
 
 
-export function UseSafariBanner() {
-    return (
-        <InfoBanner className={"bg-info relative"} endElement={<FiExternalLink color="#ffffff" />} onClick={() => window.open('x-web-search://?playkaboom.com', '_blank')}>
-            <img src="/safari.png" className="h-32 w-32 object-cover absolute -left-16 -top-10" alt="" /><div className="z-[1] text-sm pl-14 tracking-tighter break-words flex flex-col w-full overflow-hidden justify-center">
-                <p>Use safari</p>
-                <p className="text-sm -mt-1 text-normal">For a better experience</p>
-            </div>
-        </InfoBanner>
-    )
-}
+
 
 export default HomeView;

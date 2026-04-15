@@ -5,7 +5,7 @@ import App from './App'
 import './index.css'
 
 render(
-  <BrowserRouter>
+  <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
     <Analytics mode={'production'} />
     <App />
   </BrowserRouter>,

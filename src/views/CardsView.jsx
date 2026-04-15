@@ -32,6 +32,11 @@ function CardsView({ }) {
 
     const {width, height} = useWindowDimensions();
 
+    useEffect(() => {
+        document.body.classList.add('ibm-font');
+        return () => document.body.classList.remove('ibm-font');
+    }, []);
+
 
 
 
@@ -45,16 +50,16 @@ function CardsView({ }) {
 
 
     return (
-        <div className='flex flex-col justify-start items-center w-full h-full  overflow-x-hidden relative scrollbar-hide'>
+        <div className='flex flex-col justify-start items-center w-full h-full  overflow-x-hidden relative scrollbar-hide ibm-font'>
             <TitleBar titleElement={
                 <>
                     <TbCardsFilled size={27} />
-                    <h1>Cards</h1>
+                    <h1 className="text-title">Cards</h1>
                 </>
             } />
             <div className='-mt-2 w-full p-2 pt-0'>
                 <CardsFilter virtualized={width < 768} onSearchUpdate={(search) => setSearchParams("s=" + search)} defaultSearch={searchParams.get("s")} onClick={(card) => setMenu(
-                    <CardInfoMenu card={card} color={card?.color}  />
+                    <CardInfoMenu card={card} color={card?.color} useIBMFont={true} />
                 )} />
             </div>
         </div>

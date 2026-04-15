@@ -15,8 +15,6 @@ import { promiser } from "../../helpers/promiser";
 import DescriptionBox from "../../components/DescriptionBox";
 import { VscVerified, VscVerifiedFilled } from "react-icons/vsc";
 import { FaGhost, FaPen, FaPlay, FaTrash } from "react-icons/fa";
-import Peer from "peerjs";
-import { constructPeerID, getPeerConfig } from "../../helpers/peerid";
 import { DevModeBanner, NamePrompt } from "../HomeView";
 import { idGenAlphabet } from "../../helpers/idgen";
 import { useQuery } from "@tanstack/react-query";
@@ -43,8 +41,6 @@ function PlaysetView({ }) {
     const [hiddenReason, setHiddenReason] = useState(false);
     const [editHiddenReason, setEditHiddenReason] = useState("");
 
-    const [createPeer, setCreatePeer] = useState();
-
 
     async function fetchPlayset({ queryKey }) {
         const [, id, user_id] = queryKey;
@@ -56,17 +52,6 @@ function PlaysetView({ }) {
     }
 
 
-
-
-
-    async function initPeers() {
-        const createPeer = new Peer(await getPeerConfig());
-        setCreatePeer(createPeer);
-    }
-
-    useEffect(() => {
-        initPeers();
-    }, [])
 
     useEffect(() => {
         if (playset) {
@@ -145,60 +130,35 @@ function PlaysetView({ }) {
 
     const createRoom = useCallback(async (playset_id) => {
 
-
-
         setPrompt({ element: <NamePrompt onEnter={setNameAndCreate} buttonValue="CREATE GAME" /> })
-
 
         async function setNameAndCreate(name) {
             if (name === "") return setPrompt(null);
 
-
-
             const code = idGenAlphabet();
 
-
-
-            const connToRoom = createPeer.connect(constructPeerID(code, "board"));
-            connToRoom.on("open", () => {
-                toast.error("Error");
-                setPrompt(null);
-                connToRoom.close();
-            })
-
-
-            createPeer.on("error", (err) => {
-
-                // removes all host-{code} from localStorage
-                const all = allLocalStorage();
-                for (let i = 0; i < all.length; i++) {
-                    const element = all[i];
-                    if (element.key.startsWith("game-")) {
-                        localStorage.removeItem(element.key)
-                        // remove host player info
-                        const code = element.key.split("-")[1];
-                        localStorage.removeItem(`player-${code?.toUpperCase()}`)
-
-                    }
-
-
+            // removes all old game data from localStorage
+            const all = allLocalStorage();
+            for (let i = 0; i < all.length; i++) {
+                const element = all[i];
+                if (element.key.startsWith("game-")) {
+                    localStorage.removeItem(element.key)
+                    const oldCode = element.key.split("-")[1];
+                    localStorage.removeItem(`player-${oldCode?.toUpperCase()}`)
                 }
+            }
 
-
-                localStorage.setItem(`game-${code}`, "{}");
-                localStorage.setItem(`player-${code}`, JSON.stringify({
-                    name,
-                    id: "HOST"
-                }));
-                if (playset_id) localStorage.setItem("lastSelectedPlayset", playset_id);
-                setPrompt(null);
-                redirect(`/lobby/${code}`, { replace: true });
-            })
-
+            localStorage.setItem(`game-${code}`, "{}");
+            localStorage.setItem(`player-${code}`, JSON.stringify({
+                name,
+                id: "HOST"
+            }));
+            if (playset_id) localStorage.setItem("lastSelectedPlayset", playset_id);
+            setPrompt(null);
+            redirect(`/lobby/${code}`, { replace: true });
         }
 
-
-    }, [createPeer])
+    }, [])
 
 
     const handleVerify = useCallback(async (mark) => {

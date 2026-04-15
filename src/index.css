@@ -12,15 +12,26 @@ html {
 
 html {
   scroll-behavior: smooth;
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* IE10+/Edge */
-  user-select: none; /* Standard */
+  -webkit-user-select: none;
+  /* Safari */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* IE10+/Edge */
+  user-select: none;
+  /* Standard */
   touch-action: manipulation;
 }
 
 body {
-  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+.lang-th,
+.lang-th body {
+  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
+  line-height: 1.5;
 }
 
 /* div {
@@ -51,14 +62,16 @@ body {
 .btn {
   transform: skewX(-10deg);
 }
-.btn > * {
+
+.btn>* {
   transform: skewX(10deg);
 }
 
 .skew {
   transform: skewX(-10deg);
 }
-.skew > * {
+
+.skew>* {
   transform: skewX(10deg);
 }
 
@@ -69,7 +82,8 @@ body {
 .skew-reverse {
   transform: skewX(10deg);
 }
-.skew-reverse > * {
+
+.skew-reverse>* {
   transform: skewX(-10deg);
 }
 
@@ -85,7 +99,40 @@ body {
 }
 
 .text-normal {
-  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
+}
+
+.lang-th .text-normal,
+.ibm-font .text-normal {
+  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+.ibm-font,
+.ibm-font * {
+  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif !important;
+  text-transform: uppercase !important;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/font/IBM_Plex_Sans/static/IBMPlexSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/font/IBM_Plex_Sans/static/IBMPlexSans-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/font/IBM_Plex_Sans/static/IBMPlexSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
 }
 
 @font-face {
@@ -95,12 +142,75 @@ body {
                               'embedded-opentype', and 'svg' */
 }
 
+@font-face {
+  font-family: "IBM Plex Sans Thai Looped";
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Thai Looped";
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-ExtraLight.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Thai Looped";
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Thai Looped";
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Thai Looped";
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Thai Looped";
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Thai Looped";
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
 .text-cowboys {
   font-family: Mythoz, Inter, Arial, Helvetica, sans-serif;
 }
 
+.lang-th .text-cowboys,
+.ibm-font .text-cowboys {
+  font-family: Mythoz, "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
+    sans-serif;
+  line-height: 1.4;
+}
+
 .text-title {
   font-family: Mythoz, Inter, Arial, Helvetica, sans-serif;
+}
+
+.lang-th .text-title,
+.ibm-font .text-title {
+  font-family: Mythoz, "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
+    sans-serif;
+  line-height: 1.4;
 }
 
 .title-shadow-primary {
@@ -131,7 +241,8 @@ body {
 /* Hide scrollbar for IE, Edge add Firefox */
 .scrollbar-hide {
   -ms-overflow-style: none;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .animate-out {
@@ -160,10 +271,8 @@ body {
 }
 
 .screen-bg {
-  background: radial-gradient(
-    theme("colors.base-100"),
-    rgba(107, 107, 107, 0.6)
-  );
+  background: radial-gradient(theme("colors.base-100"),
+      rgba(107, 107, 107, 0.6));
 }
 
 .screen-bg-blue {
@@ -175,91 +284,69 @@ body {
 }
 
 .logo-gradient-neutral {
-  background: radial-gradient(
-    #000000,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(#000000,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .white-blob-gradient {
-  background: radial-gradient(
-    rgba(255, 255, 255, 0.421),
-    rgba(255, 255, 255, 0),
-    #00000000
-  );
+  background: radial-gradient(rgba(255, 255, 255, 0.421),
+      rgba(255, 255, 255, 0),
+      #00000000);
 }
 
 .circular-gradient-primary {
-  background: radial-gradient(
-    theme("colors.primary"),
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(theme("colors.primary"),
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .circular-gradient-secondary {
-  background: radial-gradient(
-    theme("colors.secondary"),
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(theme("colors.secondary"),
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .circular-gradient-success {
-  background: radial-gradient(
-    theme("colors.success"),
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(theme("colors.success"),
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .circular-gradient-accent {
-  background: radial-gradient(
-    #4a4a4a,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(#4a4a4a,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .circular-gradient-accent2 {
-  background: radial-gradient(
-    #858585,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(#858585,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .circular-gradient-sky {
-  background: radial-gradient(
-    #539cf6,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(#539cf6,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .circular-gradient-wine {
-  background: radial-gradient(
-    #970202,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(#970202,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .circular-gradient-lime {
-  background: radial-gradient(
-    #90f96a,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(#90f96a,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .circular-gradient-green {
-  background: radial-gradient(
-    #358517,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0)
-  );
+  background: radial-gradient(#358517,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0));
 }
 
 .animate-left-to-right {
@@ -280,6 +367,7 @@ body {
   from {
     transform: translateX(-50vw);
   }
+
   to {
     transform: translateX(50vw);
   }
@@ -289,6 +377,7 @@ body {
   from {
     transform: translateX(50vw);
   }
+
   to {
     transform: translateX(-50vw);
   }
@@ -314,11 +403,11 @@ body {
     inset -0px -0px 15px 0 rgba(255, 255, 255, 0.3);
 }
 
-.bold-child-error > b {
+.bold-child-error>b {
   @apply text-error;
 }
 
-.bold-child-info > b {
+.bold-child-info>b {
   @apply text-info;
 }
 
@@ -332,16 +421,19 @@ img {
 }
 
 .animate-size-pulse {
-  animation: anim-size-pulse 2s infinite; /*ANIMATION PROPERTY [animation name, time duration]*/
+  animation: anim-size-pulse 2s infinite;
+  /*ANIMATION PROPERTY [animation name, time duration]*/
 }
 
 @keyframes anim-size-pulse {
   0% {
     transform: scale(100%);
   }
+
   50% {
     transform: scale(115%);
   }
+
   100% {
     transform: scale(100%);
   }
@@ -353,7 +445,8 @@ img {
 }
 
 .fly-through-from-left {
-  animation: fly-through-from-left 3s; /*ANIMATION PROPERTY [animation name, time duration]*/
+  animation: fly-through-from-left 3s;
+  /*ANIMATION PROPERTY [animation name, time duration]*/
   animation-timing-function: linear;
   animation-fill-mode: forwards;
 }
@@ -362,19 +455,23 @@ img {
   0% {
     transform: translateX(-120vw);
   }
+
   20% {
     transform: translateX(-10vw);
   }
+
   80% {
     transform: translateX(10vw);
   }
+
   100% {
     transform: translateX(120vw);
   }
 }
 
 .fly-through-from-right {
-  animation: fly-through-from-right 3s; /*ANIMATION PROPERTY [animation name, time duration]*/
+  animation: fly-through-from-right 3s;
+  /*ANIMATION PROPERTY [animation name, time duration]*/
   animation-timing-function: linear;
   animation-fill-mode: forwards;
 }
@@ -383,19 +480,23 @@ img {
   0% {
     transform: translateX(120vw);
   }
+
   20% {
     transform: translateX(10vw);
   }
+
   80% {
     transform: translateX(-10vw);
   }
+
   100% {
     transform: translateX(-120vw);
   }
 }
 
 .anim-out-after-3 {
-  animation: anim-out-after-3 3s; /*ANIMATION PROPERTY [animation name, time duration]*/
+  animation: anim-out-after-3 3s;
+  /*ANIMATION PROPERTY [animation name, time duration]*/
   animation-fill-mode: forwards;
 }
 
@@ -403,9 +504,11 @@ img {
   0% {
     opacity: 100%;
   }
+
   90% {
     opacity: 100%;
   }
+
   100% {
     opacity: 0%;
     display: none;
@@ -430,11 +533,9 @@ html {
 
 
 .dev-mode-stripes {
-  background: repeating-linear-gradient(
-  45deg,
-  theme('colors.amber.400'),
-  theme('colors.amber.400') 10px,
-  #000000 10px,
-  #000000 20px
-);
+  background: repeating-linear-gradient(45deg,
+      theme('colors.amber.400'),
+      theme('colors.amber.400') 10px,
+      #000000 10px,
+      #000000 20px);
 }

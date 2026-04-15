@@ -11,8 +11,7 @@ import CardInfoMenu from "./menus/CardInfoMenu";
 import { BiError } from "react-icons/bi"
 import { IoColorPaletteSharp } from "react-icons/io5"
 import { TbPlayCard } from "react-icons/tb"
-
-
+import { useTranslation } from "../config/i18n";
 
 
 function Card({ card, hide, setHide, sendCard, allowColorReveal, remoteMode, onRemoteColorReveal, onRemoteCardReveal, nomotion = true }) {
@@ -86,7 +85,7 @@ function Card({ card, hide, setHide, sendCard, allowColorReveal, remoteMode, onR
 
                 <div className={"absolute w-full flex justify-center items-center gap-2 z-10 transition-all rounded-xl -bottom-11 "}>
                     <button onClick={() => showCardInfo()} style={{ backgroundColor: cardInfo.color.primary }} className={" h-7 text-sm font-bold text-white px-3 py-1 rounded-full transition-all duration-500 delay-400 " + (hide ? " opacity-0 -translate-y-14 " : " opacity-100 -translate-y-0 ")}>
-                        More info
+                        <Translation helper="more_info" />
                     </button>
 
                     <button onClick={() => onRemoteCardReveal()} style={{ backgroundColor: cardInfo.color.primary }} className={" h-7 text-sm font-bold text-white px-3 py-1 rounded-full transition-all duration-500 delay-200 flex items-center justify-center " + (hide || !remoteMode ? " opacity-0 -translate-y-14 " : ` opacity-100 -translate-y-0 `) + (remoteMode ? " w-10 " : " w-0 -mx-4 ")}>
@@ -122,8 +121,9 @@ function Card({ card, hide, setHide, sendCard, allowColorReveal, remoteMode, onR
 
 
 export function CardFront({ onClick = () => { }, color, card }) {
-
-
+    const { language, t } = useTranslation();
+    const cardName = language === 'th' && card?.name_th ? card.name_th : card?.name;
+    const cardDesc = language === 'th' && card?.description_th ? card.description_th : card?.description;
 
     return (
         <C onClick={onClick} color={color} >
@@ -133,10 +133,10 @@ export function CardFront({ onClick = () => { }, color, card }) {
                         {card?.src && card.src !== "" && <img src={`/cards${card.src}`} alt="" className="w-full " />}
                     </div>
                     <div className="upright-text flex flex-col justify-start items-start w-3/12 h-full p-1.5 pt-2.5">
-                        <div className="text-xs -ml-0.5 text-normal">You are the</div>
-                        <div className="text-xl font-extrabold uppercase text-title -ml-0.5">{card.name}</div>
+                        <div className="text-xs -ml-0.5 text-normal">{t("you_are_the")}</div>
+                        <div className={"text-xl font-extrabold uppercase text-title -ml-0.5 " + (language === "th" ? " !text-[1.2rem] " : "  ")} >{cardName}</div>
 
-                        <div className="text-xs uppercase text-normal">{card.description}</div>
+                        <div className={"text-xs uppercase text-normal " + (language === "th" ? " !text-[0.65rem] !leading-[0.95rem] " : "  ")}>{cardDesc}</div>
 
                     </div>
                 </div>
@@ -157,7 +157,7 @@ export function CardBack({ onClick = () => { }, color, allowColorReveal }) {
 
     const [drag, setDrag] = useState(0);
     const [colorReveal, setColorReveal] = useState(false);
-
+    const { t } = useTranslation();
 
 
 
@@ -186,11 +186,11 @@ export function CardBack({ onClick = () => { }, color, allowColorReveal }) {
                                 <h1>{color.title}</h1>
                             </div> :
                             allowColorReveal ?
-                                "COLOR REVEAL"
+                                t("color_reveal")
                                 :
                                 <div className="flex justify-center items-center gap-3 p-1.5 text-error">
                                     <BiError size={22} />
-                                    <h1 className="text-white">DISABLED</h1>
+                                    <h1 className="text-white">{t("disabled")}</h1>
                                 </div>
                         }
                     </h1>
@@ -238,7 +238,9 @@ export function C({ onClick = () => { }, color = { primary: "#888888", secondary
     )
 }
 
-
-
+function Translation({ helper }) {
+    const { t } = useTranslation();
+    return <>{t(helper)}</>;
+}
 
 export default Card;

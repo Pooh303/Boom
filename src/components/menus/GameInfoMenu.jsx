@@ -238,7 +238,7 @@ function GameInfoMenu({ code, game, players, isHost, me, nextRound = () => { }, 
             <h1 className='text-title font-extrabold text-2xl py-4 text-secondary shadow-2xl shadow-base-100 bg-base-200 w-full text-center '>{code}</h1>
             <div className='w-full h-full overflow-y-scroll overflow-x-hidden scrollbar-hide pt-3'>
 
-                <div className='w-full px-4 py-2 -mb-4'>
+                <div className='w-full px-4 py-2 mb-2'>
                     <PlaysetDisplay autoFetchInteractions noOpen playset={playset} quickActions={{vote: true, open: true, bookmark: true, profile: true}} />
                 </div>
 
@@ -326,7 +326,7 @@ export function ToggleButton({ checked, onChange = () => { }, children, recommen
                 <h4>{children}</h4>
                 <p className={'text-xs text-error transition-all whitespace-break-spaces ' + (!hideReccomended && !disabled && recommended !== undefined && checked !== recommended ? " opacity-100 h-4 " : " opacity-0 h-0 ") + (customText ? customTextClassName : "")}>{customText || `Recommended: ${recommended ? "on" : "off"}`}</p>
             </div>
-            <input type="checkbox" disabled={disabled} className={"toggle toggle-primary " + toggleClassName} checked={checked} />
+            <input readOnly type="checkbox" disabled={disabled} className={"pointer-events-none toggle toggle-primary " + toggleClassName} checked={!!checked} />
         </div>
     )
 }

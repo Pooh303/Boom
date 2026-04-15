@@ -1,8 +1,8 @@
-import moment from "moment";
+import dayjs from "dayjs";
 
 
 export function generateGame(playerCount) {
-    let game = {created_at: moment().format("x"), phase: "rooms", round: 1} // phases are "room", "rounds", "boom"
+    let game = {created_at: dayjs().valueOf(), phase: "rooms", round: 1} // phases are "room", "rounds", "boom"
 
 
     game.rounds = generateDefaultRounds(playerCount);

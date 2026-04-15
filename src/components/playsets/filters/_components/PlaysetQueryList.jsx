@@ -1,6 +1,6 @@
 import React from 'react';
 import FilterBar from './FilterBar';
-import useLocalStorage from 'use-local-storage';
+import { useLocalStorage } from '../../../../hooks/useLocalStorage';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import supabase from '../../../../supabase';
 import { useCallback, useContext, useEffect, useMemo, useRef } from 'preact/hooks';

@@ -1,6 +1,7 @@
 import 'animate.css';
 import '../game.css';
 import { useContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useTranslation } from "../config/i18n";
 import { redirect, useParams } from "react-router-dom";
 
 // components
@@ -8,8 +9,7 @@ import Countdown from "../components/Countdown";
 import { PageContext } from "../components/PageContextProvider";
 
 // dependencies
-import { Peer } from "peerjs";
-import moment from 'moment';
+import dayjs from "dayjs";
 
 
 // icons
@@ -28,7 +28,7 @@ import { TbCards, TbPlayCard } from "react-icons/tb"
 import { generateGame } from "../helpers/game";
 import { getCardColorFromColorName, getCardFromId, getCardsForPlayset } from "../helpers/cards";
 import Card, { CardFront } from "../components/Card";
-import { constructPeerID, getPeerConfig } from "../helpers/peerid";
+import supabase from '../supabase';
 import { idGenAlphabet, rng } from "../helpers/idgen";
 import SendCardMenu from '../components/menus/SendCardMenu';
 import { getPlaysetById, maximizePlayset } from '../helpers/playsets';
@@ -45,15 +45,17 @@ import PlayerSelectMenu from '../components/menus/PlayerSelectMenu';
 import toast from 'react-hot-toast';
 import useWindowDimensions from '../hooks/useWindowDimensions';
 import { interpolateColor } from '../helpers/color';
-import { FaFlagCheckered } from 'react-icons/fa';
+import { FaCrown, FaFlagCheckered } from 'react-icons/fa';
 import { PiPersonSimpleRunBold } from 'react-icons/pi';
 import { BsFillDoorOpenFill } from 'react-icons/bs';
 import RoundInfoMenu from '../components/menus/RoundsInfoMenu';
 import { Helmet } from 'react-helmet';
+import VoteLeaderScreen from '../components/VoteLeaderScreen';
+import SelectHostagesScreen from '../components/SelectHostagesScreen';
 
 
 
-const ROUND_NAMES = ["NOT YET A", "FIRST", "SECOND", "THIRD", "FOURTH", "FITH"]
+const ROUND_KEYS = ["not_yet", "first", "second", "third", "fourth", "fifth"];
 
 
 function GameView(props) {
@@ -65,6 +67,7 @@ function GameView(props) {
     const [loading, setLoading] = useState(true)
     const [host, setHost] = useState(false);
     const [me, setMe] = useState(null);
+    const [devMode, setDevMode] = useState(JSON.parse(localStorage.getItem("devmode") || "false"));
 
 
 
@@ -96,7 +99,7 @@ function GameView(props) {
             }
             <div className={'flex flex-col justify-start items-start w-full h-full'}>
                 <div className='overflow-visible w-full scrollbar-hide flex flex-col items-center' >
-                    {loading ? <div className='loading' /> : host ? <HostGame me={me} code={code} setScreen={setScreen} setMe={setMe} /> : <ClientGame me={me} code={code} setScreen={setScreen} setMe={setMe} />}
+                    {loading ? <div className='loading' /> : host ? <HostGame devMode={devMode} me={me} code={code} setScreen={setScreen} setMe={setMe} /> : <ClientGame devMode={devMode} me={me} code={code} setScreen={setScreen} setMe={setMe} />}
                 </div>
             </div>
         </>
@@ -105,10 +108,11 @@ function GameView(props) {
 
 
 
-function ClientGame({ me, setMe, code, setScreen }) {
+function ClientGame({ me, setMe, code, setScreen, devMode }) {
 
 
     const { connectionErrorPrompt, redirect, setMenu2 } = useContext(PageContext);
+    const { t } = useTranslation();
 
 
     const [playerList, setPlayerList] = useState([]);
@@ -116,10 +120,62 @@ function ClientGame({ me, setMe, code, setScreen }) {
 
     const [countdown, setCountdown] = useState(300)
 
-    const [conn, setConn] = useState(null);
+    const [connected, setConnected] = useState(false);
 
     const [hostTimeDifference, setHostTimeDifference] = useState(0);
 
+    const channel = useRef(null);
+
+    function testConnection() {} 
+
+    useEffect(() => {
+        initSupabase();
+
+        return () => {
+            if (channel.current) channel.current.unsubscribe();
+        }
+    }, [])
+
+
+    async function initSupabase() {
+        const chan = supabase.channel(`game-${code}`, {
+            config: {
+                broadcast: { self: false },
+            }
+        })
+
+        channel.current = chan;
+
+        chan.on('broadcast', { event: 'game_sync' }, ({ payload: data }) => {
+            if (data?.game) setGame(data.game);
+            if (data?.players) setPlayerList(data.players);
+            if (data?.hostTimeUnixRN) setHostTimeDifference(dayjs().unix() - Number(data.hostTimeUnixRN));
+            setConnected(true);
+        })
+        .on('broadcast', { event: 'redirect' }, ({ payload }) => {
+            if (payload?.to) redirect(payload.to);
+        })
+        .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                chan.send({
+                    type: 'broadcast',
+                    event: 'client_action',
+                    payload: { intent: "connect", payload: { id: me?.id } }
+                });
+            }
+        });
+    }
+
+
+    function execute(action, args = []) {
+        if (!channel.current) return;
+
+        channel.current.send({
+            type: 'broadcast',
+            event: 'client_action',
+            payload: { intent: "player-fn", payload: { action, args } }
+        });
+    }
 
 
     const avaConfig = useMemo(() => {
@@ -130,15 +186,10 @@ function ClientGame({ me, setMe, code, setScreen }) {
 
 
     useEffect(() => {
-        if (countdown <= 0 && !conn) connectionErrorPrompt();
+        if (countdown <= 0 && !connected) {
+            console.log("⏰ Timer hit 0 on client, but no connection.");
+        }
     }, [countdown])
-
-
-
-    useEffect(() => {
-        startPeer();
-
-    }, [])
 
 
     useEffect(() => {
@@ -148,142 +199,6 @@ function ClientGame({ me, setMe, code, setScreen }) {
         localStorage.setItem(`player-${code}`, JSON.stringify(newMe))
         setMe(newMe);
     }, [playerList])
-
-
-
-    async function startPeer() {
-        const peer = new Peer(constructPeerID(code, me?.id), await getPeerConfig());
-
-        peer.on("open", () => {
-            var conn = peer.connect(constructPeerID(code, "host"));
-
-            conn.on("open", () => {
-                conn.send({ intent: "connect", payload: { id: me?.id } })
-                setConn(conn);
-            })
-
-
-            conn.on("data", data => {
-                switch (data?.intent) {
-                    case "player_list":
-                        setPlayerList(data?.payload?.players || []);
-                        break;
-                    case "connected": // game data will be sent with this
-                        setGame(data?.payload?.game);
-                        setPlayerList(data?.payload?.players)
-                        setConn(conn)
-                        var hostRN = data?.payload?.hostTimeUnixRN;
-                        if (hostRN) {
-                            var clientRN = moment().format("X");
-                            setHostTimeDifference(clientRN - hostRN);
-
-                        }
-                        break;
-                    case "game_data": // update game data
-                        setGame(data?.payload?.game);
-                        var hostRN = data?.payload?.hostTimeUnixRN;
-                        if (hostRN) {
-                            var clientRN = moment().format("X");
-                            setHostTimeDifference(clientRN - hostRN);
-                        }
-                        break;
-                    case "remove_screen":
-                        setScreen(null);
-                        break;
-                    case "redirect":
-                        if (data?.payload?.to) {
-                            if (data?.payload?.delay) {
-                                setTimeout(() => {
-                                    conn.close();
-                                    redirect(data?.payload?.to)
-                                    peer.destroy()
-                                }, data?.payload?.delay || 1000)
-                            } else {
-                                conn.close();
-                                redirect(data?.payload?.to)
-                                peer.destroy()
-                            }
-
-                        }
-                        break;
-                    case "remote-color-reveal":
-                        var { color_name, player, from_player } = data?.payload || {}
-                        var color = getCardColorFromColorName(color_name);
-                        if (!color || !player || !from_player) return;
-                        toast(<ColorRevealToast color={color} player={from_player} />, { id: "color:" + from_player?.id, duration: 5000, position: "top-left", style: { backgroundColor: "transparent", padding: "0px", boxShadow: "none" }, className: "p-0 -mx-3 bg-red-500 w-full max-w-md shadow-none drop-shadow-none" })
-                        break;
-                    case "remote-card-reveal":
-                        var { card, player, from_player } = data?.payload || {}
-                        var color = getCardColorFromColorName(card?.color_name);
-                        if (!color || !player || !card || !from_player) return;
-                        toast(<CardRevealToast card={{ ...card, color }} player={from_player} />, { id: "card:" + from_player?.id, duration: 5000, position: "top-left", style: { backgroundColor: "transparent", padding: "0px", boxShadow: "none" }, className: "p-0 -mx-3 bg-red-500 w-full max-w-md shadow-none drop-shadow-none" })
-                        break;
-                }
-            })
-
-
-            conn.on("error", () => { testConnection(); peer.destroy() })
-
-            conn.on("close", () => { testConnection(); peer.destroy() })
-        })
-
-
-
-        peer.on("error", (err) => {
-            if (!game) return connectionErrorPrompt();
-            setConn(null);
-        })
-
-
-
-
-
-    }
-
-    async function testConnection() {
-        const peer = new Peer(await getPeerConfig());
-
-        console.log("🌐")
-        setConn(undefined); // undefined means loading
-        setTimeout(() => {
-
-            var conn = peer.connect(constructPeerID(code, "host"));
-            if (!conn) {
-                setConn(null);
-                connectionErrorPrompt();
-                return
-            }
-
-            const connection = { isOnline: null }
-
-            conn.on("open", () => {
-                peer.destroy();
-                if (connection.isOnline === null) {
-                    connection.isOnline = true;
-                    startPeer();
-                }
-            })
-
-            setTimeout(() => {
-                if (connection.isOnline === null) {
-                    connection.isOnline = false;
-                    setConn(null);
-                    peer.destroy();
-                    setTimeout(() => testConnection(peer), 10 * 1000)
-                }
-            }, 2000)
-
-
-        }, 2000)
-
-    }
-
-
-
-
-
-
-
 
 
     // menu
@@ -302,20 +217,11 @@ function ClientGame({ me, setMe, code, setScreen }) {
     }
 
 
-    function execute(action, args = []) {
-        if (!conn) return connectionErrorPrompt();
-        conn.send({ intent: "player-fn", payload: { action, args } });
-    }
-
-
-
-
-
     return (game ?
         <div className='flex flex-col justify-start items-center w-full h-full scrollbar-hide '>
             <div className="flex flex-row justify-center items-center p-3 w-full relative h-[5.2rem]">
-                {!conn ? <div onClick={() => window.location.href = window.location.href} className="drop-shadow-sm clickable w-10 h-full absolute top-0 bottom-0 left-5 z-20 btn-base-100 flex items-center justify-center text-error text-3xl rounded-full  unskew font-bold">
-                    {conn === null ? <IoCloudOfflineOutline /> : <span className='loading loading-spinner' />}
+                {!connected ? <div onClick={() => window.location.href = window.location.href} className="drop-shadow-sm clickable w-10 h-full absolute top-0 bottom-0 left-5 z-20 btn-base-100 flex items-center justify-center text-error text-3xl rounded-full  unskew font-bold">
+                    {connected === null ? <IoCloudOfflineOutline /> : <span className='loading loading-spinner' />}
                 </div>
                     :
                     <div className='absolute top-0 bottom-0 z-[100] h-full left-5 w-10 flex items-center justify-center drop-shadow-sm dropdown '>
@@ -324,7 +230,7 @@ function ClientGame({ me, setMe, code, setScreen }) {
                                 <Avatar className=' rounded-full' style={{ height: "2.2rem", width: "2.2rem" }} {...avaConfig} />
                             </label>
                             <ul tabIndex={0} className="dropdown-content pt-2 absolute z-20">
-                                <AvatarMenu me={me} />
+                                <AvatarMenu me={me} isHost={false} execute={execute} />
                             </ul>
                         </div>
                     </div>
@@ -342,10 +248,9 @@ function ClientGame({ me, setMe, code, setScreen }) {
                     <MiniRoundDisplay game={game} />
 
                 </div>
-                {/* <button className="clickable w-10 h-10 absolute top-3 right-3 btn-accent rounded-full text-base-100 unskew font-bold text-xl">?</button> */}
             </div>
 
-            <Game setCountdown={setCountdown} setScreen={setScreen} execute={execute} me={me} getPlayers={() => playerList} game={game} hostTimeDifference={hostTimeDifference} code={code} />
+            <Game devMode={devMode} setCountdown={setCountdown} setScreen={setScreen} execute={execute} me={me} getPlayers={() => playerList} game={game} hostTimeDifference={hostTimeDifference} code={code} />
 
         </div>
 
@@ -353,35 +258,26 @@ function ClientGame({ me, setMe, code, setScreen }) {
 
         <div className='flex flex-col justify-start items-center w-full mt-64'>
             <span className='loading loading-spinner'></span>
-            {/* <button className='btn mt-6' onClick={() => window.location.href = window.location.href}>Reload</button> */}
-            <a className='btn btn-ghost link font-bold clickable' href="/">Leave</a>
+            <a className='btn btn-ghost link font-bold clickable' href="/">{t("leave")}</a>
 
         </div>
     )
 }
 
 
-function HostGame({ me, setMe, code, setScreen }) {
+function HostGame({ me, setMe, code, setScreen, devMode }) {
 
     const { connectionErrorPrompt, setMenu2, setPrompt, setMenu } = useContext(PageContext);
 
-    const [updatedRef, setUpdatedRef] = useState([]); // update like this manuallyUpdateRef(); every time ref is updated
+    const [updatedRef, setUpdatedRef] = useState([]); 
     const [startCondition, setStartCondition] = useState(false);
 
 
     const [countdown, setCountdown] = useState(300)
 
-
-
-
-
-    const [peer, setPeer] = useState(null)
-
+    const channel = useRef(null);
 
     const game_data = JSON.parse(localStorage.getItem(`game-${code}`));
-
-
-
 
     const players = useRef(game_data?.players || []);
     const game = useRef(game_data?.game || null);
@@ -395,13 +291,13 @@ function HostGame({ me, setMe, code, setScreen }) {
     }, [me])
 
     useEffect(() => {
-        startPeer()
+        initSupabase()
         setupGame();
         updateMe();
 
-
-
-
+        return () => {
+            if (channel.current) channel.current.unsubscribe();
+        }
     }, [code])
 
 
@@ -409,8 +305,18 @@ function HostGame({ me, setMe, code, setScreen }) {
         setPlayerState([...players.current.map(p => (p?.conn ? { ...p, conn: true } : { ...p, conn: false }))])
         setGameState({ ...game.current })
         storeGame();
-        sendToAll({ intent: "game_data", payload: { game: game.current, hostTimeUnixRN: moment().format("X") } })
-        sendToAll({ intent: "player_list", payload: { players: players.current.map(p => ({ ...p, conn: undefined })) } })
+        // Send combined game+players in a single broadcast (matches client's game_sync handler)
+        if (channel.current) {
+            channel.current.send({
+                type: 'broadcast',
+                event: 'game_sync',
+                payload: {
+                    game: game.current,
+                    players: players.current.map(p => ({ ...p, conn: p.conn ? true : false })),
+                    hostTimeUnixRN: dayjs().unix()
+                }
+            });
+        }
         updateMe();
     }, [updatedRef])
 
@@ -430,22 +336,35 @@ function HostGame({ me, setMe, code, setScreen }) {
 
 
 
-    function updateGameFor(playerIds = []) { // saves game n stuff but only sends updates to specific ids
+    function updateGameFor(playerIds = []) { 
         setPlayerState([...players.current.map(p => (p?.conn ? { ...p, conn: true } : { ...p, conn: false }))])
 
         setGameState({ ...game.current })
         storeGame();
         updateMe();
-        for (let id of playerIds) {
-            if (id.toUpperCase() !== "HOST") {
-                sendTo(id, { intent: "game_data", payload: { game: game.current, hostTimeUnixRN: moment().format("X") } })
-                sendTo(id, { intent: "player_list", payload: { players: players.current.map(p => ({ ...p, conn: undefined })) } })
-            }
+        // Send combined game+players to all (same as manuallyUpdateRef)
+        if (channel.current) {
+            channel.current.send({
+                type: 'broadcast',
+                event: 'game_sync',
+                payload: {
+                    game: game.current,
+                    players: players.current.map(p => ({ ...p, conn: p.conn ? true : false })),
+                    hostTimeUnixRN: dayjs().unix()
+                }
+            });
         }
     }
 
     function manuallyUpdateRef() {
         setUpdatedRef([]);
+        if (channel.current) {
+            channel.current.send({
+                type: 'broadcast',
+                event: 'game_sync',
+                payload: { game: game.current, players: players.current.map(p => ({ ...p, conn: p.conn ? true : false })), hostTimeUnixRN: dayjs().unix() }
+            });
+        }
     }
 
     function updateMe() {
@@ -454,74 +373,43 @@ function HostGame({ me, setMe, code, setScreen }) {
         setMe(newMe);
     }
 
-    async function startPeer() {
-        const peer = new Peer(constructPeerID(code, "host"), await getPeerConfig());
+    async function initSupabase() {
+        const chan = supabase.channel(`game-${code}`, {
+            config: {
+                broadcast: { self: false },
+            }
+        })
 
-        setPeer(peer);
+        channel.current = chan;
 
-
-
-        peer.on("connection", (conn) => {
-
-
-            conn.on("open", () => {
-
-
-
-                conn.on("data", (data) => {
-                    console.log(data?.intent)
-                    switch (data?.intent) {
-                        case "join":
-                            conn.send({ intent: "redirect", payload: { to: "/rejoin/" + code } });
-                            break;
-                        case "connect":
-                            const playerData = getPlayerFromId(data?.payload?.id);
-                            if (!playerData) conn.send({ intent: "redirect", payload: { to: "/rejoin/" + code + "/?m=1" } });
-                            if (playerData?.conn) playerData.conn.close();
-                            let newPlayers = players.current.map(p => (p.id === data?.payload?.id ? { ...p, conn } : p))
-                            players.current = newPlayers;
-                            updateGameFor([])
-                            if (game) conn.send({ intent: "connected", payload: { game: game.current, players: players.current.map(p => ({ ...p, conn: undefined })), hostTimeUnixRN: moment().format("X") } })
-                            break;
-                        case "player-fn":
-                            if (data?.payload) {
-                                const { action, args } = data.payload;
-                                if (action && args) {
-                                    execute(action, args);
-                                }
-                            }
-                            break;
-                        default:
-                            return conn.close()
+        chan.on('broadcast', { event: 'client_action' }, ({ payload: data }) => {
+            console.log("Action received:", data?.intent)
+            switch (data?.intent) {
+                case "join":
+                    break;
+                case "connect":
+                    const playerData = getPlayerFromId(data?.payload?.id);
+                    if (playerData) {
+                        playerData.conn = true;
+                        updateGameFor([playerData.id]);
                     }
-
-
-
-
-                });
-
-
-                conn.on("close", () => {
-                    const newPlayers = players.current.map(p => (p?.conn?.connectionId === conn?.connectionId ? { ...p, conn: undefined } : p))
-                    players.current = newPlayers;
-                    updateGameFor([])
-
-                })
-
-
-
-            });
-
-
-        });
-
-        peer.on("error", (err) => {
-            console.log(err)
+                    break;
+                case "player-fn":
+                    if (data?.payload) {
+                        const { action, args } = data.payload;
+                        if (PlayerFn[action]) {
+                            PlayerFn[action](...args);
+                        }
+                    }
+                    break;
+                case "leave":
+                    const p = getPlayerFromId(data?.payload?.id);
+                    if (p) p.conn = false;
+                    manuallyUpdateRef();
+                    break;
+            }
         })
-
-        peer.on("disconnected", (err) => {
-            connectionErrorPrompt(true)
-        })
+        .subscribe();
     }
 
 
@@ -531,20 +419,14 @@ function HostGame({ me, setMe, code, setScreen }) {
 
 
 
-    function sendToAll(msg) {
-        for (let element of players.current) {
-            if (element?.conn) {
-                element.conn.send(msg)
-            }
-        }
-    }
 
-
-    function sendTo(id, msg) {
-        if (!id) return;
-        const player = getPlayerFromId(id);
-        if (!player?.conn) return
-        player.conn.send(msg)
+    function sendRedirectToAll(to) {
+        if (!channel.current) return;
+        channel.current.send({
+            type: 'broadcast',
+            event: 'redirect',
+            payload: { to }
+        });
     }
 
 
@@ -598,7 +480,7 @@ function HostGame({ me, setMe, code, setScreen }) {
             const randomIndex = rng(0, roomsLeft.length - 1);
             const startingRoom = roomsLeft[randomIndex];
             roomsLeft.splice(randomIndex, 1);
-            return ({ ...p, startingRoom })
+            return ({ ...p, startingRoom, room: startingRoom })
         })
 
 
@@ -648,7 +530,7 @@ function HostGame({ me, setMe, code, setScreen }) {
         cardsInGame = [...new Set(cardsInGame)];
         cardsInGame = cardsInGame.sort((a, b) => parseInt(a.slice(-3)) - parseInt(b.slice(-3)))
 
-        game.current = { ...gameData, ...game_data, buriedCard, cardsInGame: cardsInGameInitial, soberCard, swapRequests: [], readyForRound: 1, paused: false, timeToReveal: false, pauseGameIndex: 0 };
+        game.current = { ...gameData, ...game_data, buriedCard, cardsInGame: cardsInGameInitial, soberCard, swapRequests: [], readyForRound: 1, paused: false, timeToReveal: false, pauseGameIndex: 0, votes: {}, votingPhase: false, hostageSelectionPhase: false, selectedHostages: {1: [], 2: []}, leaders: {} };
 
         manuallyUpdateRef();
     }
@@ -675,9 +557,10 @@ function HostGame({ me, setMe, code, setScreen }) {
 
         game.current.rounds = game.current.rounds.map((round, i) => {
             var roundBefore = game.current.rounds[i - 1];
-            if (!roundBefore || (roundBefore?.ended && !round?.started_at)) {
-                round.started_at = moment().format("X");
+            if (!round?.started_at && (!roundBefore || roundBefore?.ended)) {
                 game.current.round = i + 1;
+                game.current.phase = "rounds"; // Ensure phase is updated
+                return { ...round, started_at: String(dayjs().unix()) };
             }
 
             return round;
@@ -689,6 +572,66 @@ function HostGame({ me, setMe, code, setScreen }) {
     function endRound() {
         game.current.rounds = game.current.rounds.map(round => (round?.started_at ? { ...round, ended: true } : round));
         game.current.paused = false;
+        
+        const totalRounds = game.current.rounds.length;
+        const endedRounds = game.current.rounds.filter(r => r?.ended).length;
+        
+        if (totalRounds === endedRounds) {
+            // According to official rules, no hostage exchange at the end of the final round.
+            game.current.votingPhase = false;
+            game.current.hostageSelectionPhase = false;
+            nextRound(); // Immediately advance to boom phase
+            return;
+        }
+
+        // Start voting phase for leader selection
+        game.current.votingPhase = true;
+        game.current.votes = {};
+    }
+
+    function confirmLeaders() {
+        const votes = game.current.votes || {};
+        const newLeaders = {};
+
+        [1, 2].forEach(roomNumber => {
+            const playersInRoom = players.current.filter(p => p.room === roomNumber);
+            const roomVotes = {};
+            playersInRoom.forEach(p => { roomVotes[p.id] = 0 });
+
+            Object.entries(votes).forEach(([voterId, candidateId]) => {
+                const voter = players.current.find(p => p.id === voterId);
+                if (voter?.room === roomNumber && roomVotes[candidateId] !== undefined) {
+                    roomVotes[candidateId]++;
+                }
+            });
+
+            let maxVotes = 0;
+            let leaderId = null;
+            Object.entries(roomVotes).forEach(([id, count]) => {
+                if (count > maxVotes) {
+                    maxVotes = count;
+                    leaderId = id;
+                }
+            });
+
+            if (leaderId) newLeaders[roomNumber] = leaderId;
+        });
+
+        game.current.leaders = newLeaders;
+        game.current.votingPhase = false;
+        
+        // After leaders are confirmed, start the hostage selection phase
+        game.current.hostageSelectionPhase = true;
+        game.current.selectedHostages = { 1: [], 2: [] };
+        
+        manuallyUpdateRef();
+    }
+
+    function skipVoting() {
+        game.current.votingPhase = false;
+        game.current.hostageSelectionPhase = true;
+        game.current.selectedHostages = { 1: [], 2: [] };
+        manuallyUpdateRef();
     }
 
 
@@ -714,11 +657,20 @@ function HostGame({ me, setMe, code, setScreen }) {
     function isInRoom(id) {
         let newPlayerss = players.current.map(p => (p.id === id ? { ...p, isInRoom: true } : p))
         players.current = newPlayerss;
+        
+        // Host check logic: Host is connected if they are running HostGame
+        const activePlayers = players.current.filter(p => p.conn || p.id === me?.id || (p.name && !p.conn)); 
+        const readyPlayers = activePlayers.filter(p => p.isInRoom);
 
-        if (players.current.length === players.current.filter(p => p.isInRoom).length) { // if all players are ready
+        console.log(`🏠 isInRoom: ${readyPlayers.length}/${activePlayers.length} ready`);
+
+        // If all active players are ready OR the host just wants to go (handled by force-start-game)
+        if (activePlayers.length > 0 && activePlayers.length <= readyPlayers.length) { 
             game.current.phase = "rounds";
             nextRound();
             manuallyUpdateRef();
+        } else {
+            manuallyUpdateRef(); // Update UI to show who is ready
         }
     }
 
@@ -727,9 +679,16 @@ function HostGame({ me, setMe, code, setScreen }) {
         let newPlayerss = players.current.map(p => (p.id === id ? { ...p, readyForRound: (game?.current?.round || p.readyForRound) + 1 } : p))
         players.current = newPlayerss;
 
-        if (players.current.length === players.current.filter(p => p.readyForRound === (game?.current?.round + 1)).length) { // if all players are ready
+        const activePlayers = players.current.filter(p => p.conn || p.id === me?.id || (p.name && !p.conn));
+        const readyPlayers = activePlayers.filter(p => p.readyForRound >= (game?.current?.round + 1));
+
+        console.log(`➡️ readyForNextRound: ${readyPlayers.length}/${activePlayers.length} ready`);
+
+        if (activePlayers.length > 0 && activePlayers.length <= readyPlayers.length) {
             game.current.phase = "rounds";
             nextRound();
+            manuallyUpdateRef();
+        } else {
             manuallyUpdateRef();
         }
     }
@@ -747,9 +706,8 @@ function HostGame({ me, setMe, code, setScreen }) {
             const [initCard, withCard] = [getPlayerFromId(initId)?.card, getPlayerFromId(withId)?.card];
             players.current = players.current.map(player => {
 
-                if (player?.id === initId) player.card = withCard;
-                if (player?.id === withId) player.card = initCard;
-
+                if (player?.id === initId) return { ...player, card: withCard };
+                if (player?.id === withId) return { ...player, card: initCard };
 
                 return player;
             })
@@ -774,7 +732,8 @@ function HostGame({ me, setMe, code, setScreen }) {
         "redirect-to-lobby": () => {
             var to = `/lobby/${code}`;
             localStorage.setItem(`game-${code}`, "{}");
-            sendToAll({ intent: "redirect", payload: { to, delay: 1500 } })
+            sendRedirectToAll(to)
+            if (channel.current) channel.current.unsubscribe();
             window.location.href = to;
         },
         "close-room": () => {
@@ -849,6 +808,97 @@ function HostGame({ me, setMe, code, setScreen }) {
                 if (playerId?.toUpperCase() === "HOST") toast(<CardRevealToast card={{ ...card, color }} player={from_player} />, { id: "card:" + from_player?.id, duration: 5000, position: "top-left", style: { backgroundColor: "transparent", padding: "0px", boxShadow: "none" }, className: "p-0 -mx-3 bg-red-500 w-full max-w-md shadow-none drop-shadow-none" })
                 else sendTo(playerId, { intent: "remote-card-reveal", payload: { card, player: { ...player, conn: undefined }, from_player } })
             }
+        },
+        "cast-vote": (voterId, candidateId) => {
+            if (!game.current.votes) game.current.votes = {};
+            game.current.votes = { ...game.current.votes, [voterId]: candidateId };
+            
+            // Auto-confirm when all players have voted
+            const totalPlayers = players.current.length;
+            const totalVotes = Object.keys(game.current.votes).length;
+            if (totalVotes >= totalPlayers) {
+                confirmLeaders();
+                return; // confirmLeaders already calls manuallyUpdateRef
+            }
+            
+            manuallyUpdateRef();
+        },
+        "retract-vote": (voterId) => {
+            if (!game.current.votes) return;
+            const newVotes = { ...game.current.votes };
+            delete newVotes[voterId];
+            game.current.votes = newVotes;
+            manuallyUpdateRef();
+        },
+        "confirm-leaders": () => {
+            confirmLeaders();
+        },
+        "skip-vote": () => {
+            skipVoting();
+        },
+        "update-room": (playerId, roomNumber) => {
+            players.current = players.current.map(p =>
+                p.id === playerId ? { ...p, room: roomNumber } : p
+            );
+            manuallyUpdateRef();
+        },
+        "toggle-hostage": (roomId, playerId) => {
+            if (!game.current.selectedHostages) game.current.selectedHostages = { 1: [], 2: [] };
+            
+            const currentSelected = game.current.selectedHostages[roomId] || [];
+            let newSelected;
+            
+            if (currentSelected.includes(playerId)) {
+                newSelected = currentSelected.filter(id => id !== playerId);
+            } else {
+                newSelected = [...currentSelected, playerId];
+            }
+            
+            game.current.selectedHostages = {
+                ...game.current.selectedHostages,
+                [roomId]: newSelected
+            };
+            manuallyUpdateRef();
+        },
+        "confirm-room-hostages": (roomId) => {
+            if (!game.current.hostageSelectionConfirmed) game.current.hostageSelectionConfirmed = {1: false, 2: false};
+            
+            game.current.hostageSelectionConfirmed = {
+                ...game.current.hostageSelectionConfirmed,
+                [roomId]: true
+            };
+            
+            // Check if both rooms have confirmed (if they exist/have players)
+            const room1Count = players.current.filter(p => p.room === 1).length;
+            const room2Count = players.current.filter(p => p.room === 2).length;
+            
+            const needsRoom1 = room1Count > 1; // Room needs to confirm only if it has more than 1 player
+            const needsRoom2 = room2Count > 1;
+            
+            const r1Confirmed = !needsRoom1 || game.current.hostageSelectionConfirmed[1];
+            const r2Confirmed = !needsRoom2 || game.current.hostageSelectionConfirmed[2];
+            
+            if (r1Confirmed && r2Confirmed) {
+                const h1 = game.current.selectedHostages?.[1] || [];
+                const h2 = game.current.selectedHostages?.[2] || [];
+                
+                // Swap players array completely so React picks it up
+                players.current = players.current.map(p => {
+                    if (h1.includes(p.id)) return { ...p, room: 2 };
+                    if (h2.includes(p.id)) return { ...p, room: 1 };
+                    return p;
+                });
+                
+                game.current.hostageSelectionPhase = false;
+                game.current.selectedHostages = {1: [], 2: []};
+                game.current.hostageSelectionConfirmed = {1: false, 2: false};
+                manuallyUpdateRef();
+                
+                // Proceed to next round!
+                nextRound();
+            } else {
+                manuallyUpdateRef();
+            }
         }
     }
 
@@ -861,7 +911,8 @@ function HostGame({ me, setMe, code, setScreen }) {
 
         function close() {
             localStorage.removeItem(`game-${code}`);
-            sendToAll({ intent: "redirect", payload: { to: "/", delay: 1000 } })
+            sendRedirectToAll("/")
+            if (channel.current) channel.current.unsubscribe();
             window.location.href = "/";
         }
     }
@@ -887,11 +938,11 @@ function HostGame({ me, setMe, code, setScreen }) {
 
     function handleTimerResume() {
 
-        var ts = moment().format("X");
+        var ts = String(dayjs().unix());
 
         var round = game.current.rounds[game.current.round - 1]
 
-        game.current.rounds[game.current.round - 1].started_at = JSON.stringify(parseInt(ts) - ((round.time * 60) - countdown + 3));
+        game.current.rounds[game.current.round - 1].started_at = String(parseInt(ts) - ((round.time * 60) - countdown + 3));
         game.current.paused = false;
 
         setMenu2(null);
@@ -921,7 +972,7 @@ function HostGame({ me, setMe, code, setScreen }) {
 
 
         function endIt() {
-            var ts = moment().format("X")
+            var ts = String(dayjs().unix())
             game.current.rounds = game.current.rounds.map(r => ({ started_at: ts, ...r, ended: true, }));
             game.current.phase = "boom";
             nextRound();
@@ -930,36 +981,30 @@ function HostGame({ me, setMe, code, setScreen }) {
 
     return (
         <div className='flex flex-col justify-start items-center w-full h-full scrollbar-hide'>
-            <div className="flex flex-row justify-center items-center p-3 w-full relative overflow-visible h-[5.2rem]">
-
-                <div className='absolute top-0 bottom-0 h-full left-5 w-10 flex items-center justify-center drop-shadow-sm z-[100] overflow-visible'>
+            <div className="flex flex-row justify-center items-center p-3 w-full relative h-[5.2rem]">
+                <div className='absolute top-0 bottom-0 z-[100] h-full left-5 w-10 flex items-center justify-center drop-shadow-sm'>
                     <div className='dropdown'>
                         <label tabIndex={0}>
                             <Avatar className=' rounded-full' style={{ height: "2.2rem", width: "2.2rem" }} {...avaConfig} />
                         </label>
-                        <ul tabIndex={0} className="dropdown-content pt-2 absolute">
-                            <AvatarMenu me={me} isHost execute={execute} />
+                        <ul tabIndex={0} className="dropdown-content pt-2 absolute z-20">
+                            <AvatarMenu me={me} isHost={true} execute={execute} />
                         </ul>
                     </div>
                 </div>
-
-
-                <div onClick={() => showInfoMenu()} className="drop-shadow-sm clickable w-10 absolute top-0 bottom-0 h-full right-5 z-[100] btn-base-100 flex items-center justify-center text-neutral text-3xl rounded-full  unskew font-bold">
+                <div className='flex flex-col justify-center items-center absolute top-2 right-0 left-0 z-10'>
+                    <Countdown s={countdown} paused={game.current?.paused} onClick={handleCountdownClick} />
+                </div>
+                <div onClick={() => showInfoMenu()} className="drop-shadow-sm clickable w-10 absolute top-0 bottom-0 h-full right-5 z-[100] btn-base-100 flex items-center justify-center text-neutral text-3xl rounded-full unskew font-bold">
                     <TbCards />
                 </div>
-
-                <div className='flex flex-col justify-center items-center absolute top-2 right-0 left-0 z-20'>
-                    <Countdown s={countdown} paused={gameState.paused} onClick={handleCountdownClick} />
-                </div>
-
-                <div style={{ zIndex: 11 }} onClick={handleCountdownClick} className='absolute -bottom-4 left-2 right-0 text-title text-secondary/70 text-center text-lg font-extrabold flex items-center justify-center'>
+                <div onClick={handleCountdownClick} className='absolute -bottom-4 left-0 right-0 text-title text-secondary/70 text-center text-lg font-extrabold flex items-center justify-center'>
                     <MiniRoundDisplay game={gameState} />
                 </div>
-                {/* <button className="clickable w-10 h-10 absolute top-3 right-3 btn-accent rounded-full text-base-100 unskew font-bold text-xl">?</button> */}
+
             </div>
 
-
-            <Game setCountdown={setCountdown} setScreen={setScreen} execute={execute} me={me} getPlayers={() => players.current} game={gameState} endRound={endRound} nextRound={nextRound} code={code} />
+            <Game devMode={devMode} setCountdown={setCountdown} setScreen={setScreen} execute={execute} me={me} getPlayers={() => players.current} game={gameState} hostTimeDifference={0} code={code} />
 
 
         </div>
@@ -968,59 +1013,63 @@ function HostGame({ me, setMe, code, setScreen }) {
 
 
 
-function Game({ me, getPlayers = () => null, game, execute = () => { }, setScreen, setCountdown, hostTimeDifference = 0, endRound = () => { }, nextRound = () => { }, code }) { // execute == function that executes PlayerFunctions from peer at host or by host at host
-
-    const [card, setCard] = useState(null);
+function Game({ game, me, code, getPlayers, execute, setScreen, setCountdown, hostTimeDifference, devMode }) {
 
 
-    const [hideCard, setHideCard] = useState(true);
-
+    const [card, setCard] = useState();
+    const [hideCard, setHideCard] = useState(false);
 
     const { setMenu, setMenu2, setPrompt } = useContext(PageContext);
+    const { t } = useTranslation();
+
+    const round = useRef(game?.rounds?.[game?.round - 1 || 0] || { time: 3, hostages: 2, started_at: "12" });
 
 
-    const round = useRef(game?.rounds?.[game?.round - 1 || 0]);
+    function getRoundName(game) {
+        if (!game) return t("not_yet_a")
+        let roundIndex = game?.round || 0;
+        return t(ROUND_KEYS[roundIndex]);
+    }
 
 
     const getHostTs = useCallback(() => {
-        return JSON.stringify(moment().format("X") - hostTimeDifference);
+        return dayjs().unix() - (Number(hostTimeDifference) || 0);
     }, [hostTimeDifference]);
 
 
 
     useEffect(() => {
         const interval = setInterval(() => {
-
-            if (!round?.current?.started_at || round?.current?.paused) return
+            const started = round?.current?.started_at;
+            const paused = round?.current?.paused;
+            
+            if (!started || paused) return;
+            
             var ts = getHostTs();
             var tsInt = parseInt(ts);
 
-            var startedAtInt = parseInt(round?.current?.started_at);
+            if (isNaN(tsInt)) return;
 
-            var roundTime = round?.current?.time * 60; // formats to milliseconds
+            var startedAtInt = parseInt(started);
+            if (isNaN(startedAtInt)) return;
 
+            var roundTime = (Number(round?.current?.time) || 3) * 60; // seconds
             var extra3secs = 3;
-            var ends_at = (startedAtInt) + roundTime + extra3secs;
+            var ends_at = startedAtInt + roundTime + extra3secs;
+            var secondsLeft = ends_at - tsInt;
 
-
-
-
-            let lastTime = startedAtInt + (tsInt - startedAtInt);
-
-            if (tsInt >= lastTime) { // newSecond
-                var secondsLeft = ends_at - lastTime;
-
-
-                if (secondsLeft <= 0) setCountdown(0)
-                else if (secondsLeft >= (roundTime)) setCountdown(roundTime);
-                else setCountdown(secondsLeft);
+            if (secondsLeft <= 0) {
+                setCountdown(0);
+            } else if (secondsLeft >= roundTime) {
+                setCountdown(roundTime);
+            } else {
+                setCountdown(secondsLeft);
             }
-
-        }, 250)
+        }, 500)
 
 
         return () => clearInterval(interval);
-    }, [])
+    }, [hostTimeDifference])
 
 
 
@@ -1051,35 +1100,69 @@ function Game({ me, getPlayers = () => null, game, execute = () => { }, setScree
 
     // stuff
     function gameHasUpdated() {
-        if (!game?.phase || !me?.startingRoom) return
+        if (!game?.phase) return
 
         setScreen(null)
 
         switch (game?.phase) {
             case "rooms":
-                setScreen(<GoToRoomScreen roomNr={me?.startingRoom} onReady={() => execute("am-in-room", [me.id])} onForceReady={me?.id?.toUpperCase() === "HOST" ? () => execute("force-start-game") : undefined} />)
+                if (me?.startingRoom) {
+                    setScreen(<GoToRoomScreen roomNr={me?.startingRoom} onReady={() => execute("am-in-room", [me.id])} onForceReady={me?.id?.toUpperCase() === "HOST" ? () => execute("force-start-game") : undefined} />)
+                } else {
+                    // Show a generic loading screen or wait
+                    setScreen(<div className="text-white text-xl animate-pulse">Initializing rooms...</div>)
+                }
                 break;
             case "rounds":
                 if (game?.rounds?.filter(r => r.started_at)?.length === game?.rounds?.filter(r => r.ended)?.length) {
-                    announceRoundEnd();
+                    if (!game?.votingPhase) {
+                        announceRoundEnd();
+                    }
+                    // When votingPhase is true, VoteLeaderScreen is rendered via JSX
                 }
-                updateCountdown(game);
                 break;
             case "boom":
                 if (game?.timeToReveal) {
-                    if (me?.id?.toUpperCase() === "HOST") {
-                        setScreen(
-                            <RevealAllScreen card={card} buriedCard={getCardFromId(game?.buriedCard)} onLobby={() => {
-                                execute("redirect-to-lobby")
-                            }} onClose={() => {
-                                execute("close-room")
-                            }} />
-                        )
-                    } else {
-                        setScreen(
-                            <RevealAllScreen card={card} buriedCard={getCardFromId(game?.buriedCard)} />
-                        )
+                    let winResult = null;
+                    const playersList = getPlayers();
+                    let president = playersList.find(p => p.card === "b001");
+                    if (!president && game?.buriedCard === "b001") {
+                        president = playersList.find(p => p.card === "b018");
                     }
+                    let bomber = playersList.find(p => p.card === "r001");
+                    if (!bomber && game?.buriedCard === "r001") {
+                        bomber = playersList.find(p => p.card === "r018");
+                    }
+
+                    if (president && bomber) {
+                        if (president.room === bomber.room) {
+                            winResult = "red_wins";
+                        } else {
+                            winResult = "blue_wins";
+                        }
+                    } else {
+                        let drone = playersList.find(p => p.card === "b045");
+                        let fist = playersList.find(p => p.card === "r045");
+                        if (drone && fist) {
+                            if (drone.room === fist.room) winResult = "blue_wins";
+                            else winResult = "red_wins";
+                        } else {
+                            let king = playersList.find(p => p.card === "b046");
+                            let dragon = playersList.find(p => p.card === "r046");
+                            if (king && dragon) {
+                                if (king.room === dragon.room) winResult = "red_wins";
+                                else winResult = "blue_wins";
+                            }
+                        }
+                    }
+
+                    setScreen(
+                        <RevealAllScreen card={card} buriedCard={getCardFromId(game?.buriedCard)} winResult={winResult} onLobby={me?.id?.toUpperCase() === "HOST" ? () => {
+                            execute("redirect-to-lobby")
+                        } : undefined} onClose={me?.id?.toUpperCase() === "HOST" ? () => {
+                            execute("close-room")
+                        } : undefined} onLeave={() => { window.location.href = "/" }} />
+                    )
 
                 } else {
                     let pauseGameCards = game.cardsInGame
@@ -1190,10 +1273,10 @@ function Game({ me, getPlayers = () => null, game, execute = () => { }, setScree
             color={card?.color?.primary || "#0019fd"}
             players={players.filter(p => p.id !== me.id)}
             onSelect={onSelect}
-            buttonText={<>REVEAL <FiSend className=" -rotate-45 ml-2 noskew" /></>}
+            buttonText={<>{t("reveal")} <FiSend className=" -rotate-45 ml-2 noskew" /></>}
             titleElement={
                 <div className='w-full flex items-center justify-start text-title text-base-content'>
-                    <TbPlayCard size={28} className='mr-2' /> CARD REVEAL
+                    <TbPlayCard size={28} className='mr-2' /> {t("card_revealed").toUpperCase()}
                 </div>
             }
         />)
@@ -1202,7 +1285,7 @@ function Game({ me, getPlayers = () => null, game, execute = () => { }, setScree
         function onSelect(playerIdArray) {
             setMenu(null)
             if (playerIdArray.length > 0) {
-                toast.success("Card revealed");
+                toast.success(t("card_revealed"));
                 execute("do-remote-card-reveal", [playerIdArray, { ...card, info: undefined, color: undefined }, me])
             }
         }
@@ -1215,10 +1298,10 @@ function Game({ me, getPlayers = () => null, game, execute = () => { }, setScree
             color={card?.color?.primary || "#0019fd"}
             players={players.filter(p => p.id !== me.id)}
             onSelect={onSelect}
-            buttonText={<>REVEAL <FiSend className=" -rotate-45 ml-2 noskew" /></>}
+            buttonText={<>{t("reveal")} <FiSend className=" -rotate-45 ml-2 noskew" /></>}
             titleElement={
                 <div className='w-full flex items-center justify-start text-title text-base-content'>
-                    <IoColorPaletteSharp size={28} className='mr-2' /> COLOR REVEAL
+                    <IoColorPaletteSharp size={28} className='mr-2' /> {t("color_revealed").toUpperCase()}
                 </div>
             }
         />)
@@ -1226,7 +1309,7 @@ function Game({ me, getPlayers = () => null, game, execute = () => { }, setScree
         function onSelect(playerIdArray) {
             setMenu(null)
             if (playerIdArray.length > 0) {
-                toast.success("Color revealed");
+                toast.success(t("color_revealed"));
                 execute("do-remote-color-reveal", [playerIdArray, card?.color_name, me])
             }
         }
@@ -1259,19 +1342,80 @@ function Game({ me, getPlayers = () => null, game, execute = () => { }, setScree
                 <meta name="description" content={`Kaboom: Join ${game?.players?.[0]?.name ? game.players[0].name + "'s " : ""} game (${code?.toUpperCase()}) for an explosive time with your friends`} />
             </Helmet>
             <div className="absolute inset-0 flex flex-col justify-center items-center z-10 scrollbar-hide top-8">
-                {me?.firstLeader && game?.phase === "rounds" && game?.round === 1 && <div style={{ animationDelay: "1s" }} className='w-full h-0 relative text-center animate__animated animate__fadeIn'>
-                    <h2 className='text-title title-shadow-secondary-xs font-extrabold text-neutral text-xl absolute left-0 right-0 bottom-4'>You're first leader</h2>
+                {((me?.firstLeader && game?.phase === "rounds" && game?.round === 1) || (game?.phase === "rounds" && game?.round > 1 && game?.leaders && (game?.leaders[1] === me?.id || game?.leaders[2] === me?.id))) && <div style={{ animationDelay: "1s" }} className='w-full h-0 relative text-center flex flex-col items-center justify-center animate__animated animate__bounceInDown'>
+                    <div className='flex items-center justify-center gap-3 bg-secondary/15 backdrop-blur-md px-6 py-2 rounded-full border-2 border-secondary/50 shadow-xl transform -translate-y-20'>
+                        <FaCrown className="text-secondary text-2xl animate-pulse" />
+                        <h2 className='text-title font-extrabold text-secondary text-xl md:text-2xl uppercase tracking-widest'>{game?.round === 1 ? t("first_leader") : t("new_leader")}</h2>
+                    </div>
                 </div>}
                 {card && <Card nomotion={false} remoteMode={game?.remote_mode} onRemoteColorReveal={onRemoteColorReveal} onRemoteCardReveal={onRemoteCardReveal} allowColorReveal={game?.color_reveal} hide={hideCard} setHide={setHideCard} card={card} sendCard={showSendCard} />}
             </div>
 
+            {/* Leader Voting Overlay */}
+            {game?.votingPhase && game?.phase === "rounds" && (
+                <VoteLeaderScreen
+                    players={getPlayers()}
+                    me={me}
+                    votes={game?.votes || {}}
+                    execute={execute}
+                    isHost={me?.id?.toUpperCase() === "HOST"}
+                    leaders={game?.leaders || {}}
+                    totalPlayerCount={getPlayers()?.length || 0}
+                />
+            )}
 
-            {/* <div className='absolute inset-2 z-20 top-auto clickable flex justify-center items-center text-title bg-neutral text-neutral-content rounded-lg p-2.5 gap-2'>
-                <div className='-rotate-90 scale-110'>
-                    <RxCardStack />
+            {/* Hostage Selection Overlay */}
+            {game?.hostageSelectionPhase && game?.phase === "rounds" && (
+                <SelectHostagesScreen
+                    players={getPlayers()}
+                    me={me}
+                    execute={execute}
+                    isHost={me?.id?.toUpperCase() === "HOST"}
+                    leaders={game?.leaders || {}}
+                    selectedHostages={game?.selectedHostages || {}}
+                    hostagesConfirmed={game?.hostageSelectionConfirmed || {}}
+                    hostagesNeeded={game?.rounds?.[(game?.round || 1) - 1]?.hostages || 2}
+                />
+            )}
+
+            {/* Debug Toolbar for Testing */}
+            {devMode && (
+                <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 p-2 bg-black/80 rounded-lg border border-white/20">
+                    <p className="text-[10px] text-white/50 text-center font-bold">DEBUG UI</p>
+                    <button 
+                        className="btn btn-xs btn-primary uppercase font-bold"
+                        onClick={() => setScreen(<RevealAllScreen card={card || {name: "President", color_name: "blue"}} onLobby={() => setScreen(null)} />)}
+                    >
+                        Test GameOver
+                    </button>
+                    <button 
+                        className="btn btn-xs btn-secondary uppercase font-bold"
+                        onClick={() => {
+                            const testPlayer = { name: "Test Player", avaConfig: {} };
+                            const testCard = { name: "President", color_name: "blue", color: { primary: "#0070f3", secondary: "#cce3ff" } };
+                            toast(<CardRevealToast card={testCard} player={testPlayer} />, { duration: 5000 });
+                        }}
+                    >
+                        Test Card Toast
+                    </button>
+                    <button 
+                        className="btn btn-xs btn-accent uppercase font-bold"
+                        onClick={() => {
+                            const testPlayer = { name: "Test Player", avaConfig: {} };
+                            const testColor = { title: "Blue Team", primary: "#0070f3", secondary: "#cce3ff", icon: () => <div className="w-6 h-6 bg-blue-500 rounded-full" /> };
+                            toast(<ColorRevealToast color={testColor} player={testPlayer} />, { duration: 5000 });
+                        }}
+                    >
+                        Test Color Toast
+                    </button>
+                    <button 
+                        className="btn btn-xs btn-warning uppercase font-bold"
+                        onClick={() => setPrompt({ element: <SwapPropmt initPlayer={{name: "Me"}} withPlayer={{name: "Friend"}} onCancel={() => setPrompt(null)} /> })}
+                    >
+                        Test Swap
+                    </button>
                 </div>
-                <h1 className='hi'>Deck</h1>
-            </div> */}
+            )}
         </>
     )
 }
@@ -1282,6 +1426,7 @@ function Game({ me, getPlayers = () => null, game, execute = () => { }, setScree
 function AvatarMenu({ isHost, me, execute = () => { } }) {
 
     const { setPrompt } = useContext(PageContext);
+    const { t } = useTranslation();
 
     function closeRoom() {
         execute("close-room");
@@ -1290,8 +1435,8 @@ function AvatarMenu({ isHost, me, execute = () => { } }) {
 
     function toLobby() {
         setPrompt({
-            title: "Are you sure?",
-            text: "This will make everyone return to the lobby.",
+            title: t("are_you_sure"),
+            text: t("lobby_confirm_text"),
             onApprove: () => execute("redirect-to-lobby")
         })
     }
@@ -1304,8 +1449,8 @@ function AvatarMenu({ isHost, me, execute = () => { } }) {
     return (
         <div className='bg-neutral rounded-lg p-4 text-neutral-content w-full flex flex-col justify-start items-start gap-2'>
             <h1 className='font-extrabold text text-title'>{me.name}</h1>
-            <button onClick={isHost ? closeRoom : leaveRoom} className='btn btn-primary w-44'>{isHost ? "CLOSE GAME" : "LEAVE GAME"}</button>
-            {isHost && <button className='btn btn-success w-44 text-success-content' onClick={() => toLobby()}>Back to lobby</button>}
+            <button onClick={isHost ? closeRoom : leaveRoom} className='btn btn-primary w-44'>{isHost ? t("close_game_upper") : t("leave_game_upper")}</button>
+            {isHost && <button className='btn btn-success w-44 text-success-content' onClick={() => toLobby()}>{t("back_to_lobby_upper")}</button>}
         </div>
     )
 }
@@ -1351,6 +1496,7 @@ function MiniRoundDisplay({ game }) {
 function GoToRoomScreen({ roomNr = 1, onReady = () => { }, onForceReady }) {
 
     const [clicked, setClicked] = useState(false);
+    const { t } = useTranslation();
 
     function handleClick() {
         onReady();
@@ -1361,13 +1507,27 @@ function GoToRoomScreen({ roomNr = 1, onReady = () => { }, onForceReady }) {
         <>
             <div className='flex flex-col items-center justify-center w-full absolute inset-0 z-10'>
                 <div className={"uppercase font-extrabold text-title text-3xl mb-4 animate__animated animate__bounceInLeft" + (roomNr == 1 ? " text-primary " : " text-secondary ")}>
-                    GO TO
+                    {t("go_to")}
                 </div>
                 <div className={"uppercase font-extrabold text-title text-5xl mb-8 animate__animated animate__bounceInRight" + (roomNr == 1 ? " text-secondary " : " text-primary ")}>
-                    ROOM {roomNr}
+                    {t("room")} {roomNr}
                 </div>
-                <button className={"btn btn-wide btn-neutral text-title " + (clicked ? " btn-disabled " : "  ")} onClick={handleClick}>{clicked ? " Waiting... " : " Ready? "}</button>
-                {onForceReady && <button className='text-normal font-light text-sm underline mt-6 p-3 ' onClick={onForceReady}>Force next</button>}
+                <button 
+                    className={"btn btn-wide btn-lg rounded-2xl border-0 shadow-lg text-title transition-all active:scale-95 " + (clicked ? " bg-white/10 text-white/40 " : " bg-white text-black hover:bg-white/90 ")} 
+                    onClick={handleClick}
+                    disabled={clicked}
+                >
+                    {clicked ? t("waiting") : t("ready_question")}
+                </button>
+                
+                {onForceReady && (
+                    <button 
+                        className='text-white/40 text-xs font-bold uppercase tracking-widest mt-8 hover:text-white/80 transition-all underline underline-offset-4' 
+                        onClick={onForceReady}
+                    >
+                        {t("force_start_game")}
+                    </button>
+                )}
 
             </div>
 
@@ -1381,15 +1541,16 @@ function GoToRoomScreen({ roomNr = 1, onReady = () => { }, onForceReady }) {
 
 function RoundStartScreen({ roundName, roundNumber = 1, totalRounds = 3 }) {
 
+    const { t } = useTranslation();
 
     const { text, color, shadowColor } = useMemo(() => {
         switch (roundName?.toUpperCase()) {
             case "FIRST":
-                return { text: "FIRST ROUND", color: "#ffffff", shadowColor: "#00ff00" };
+                return { text: t("first").toUpperCase() + " " + t("round").toUpperCase(), color: "#ffffff", shadowColor: "#00ff00" };
             case "LAST":
-                return { text: "LAST ROUND", color: "#ffffff", shadowColor: "#ff0000" };
+                return { text: t("last_round").toUpperCase(), color: "#ffffff", shadowColor: "#ff0000" };
             default:
-                return { text: "ROUND " + roundNumber, color: "#ffffff", shadowColor: interpolateColor("#00ff00", "#ff0000", ((roundNumber - 1) / (totalRounds - 1)) * 100) };
+                return { text: t("round").toUpperCase() + " " + roundNumber, color: "#ffffff", shadowColor: interpolateColor("#00ff00", "#ff0000", ((roundNumber - 1) / (totalRounds - 1)) * 100) };
         }
     }, [roundName, roundNumber])
 
@@ -1551,6 +1712,8 @@ function RunningTextAnimation({ text, color, shadowColor }) {
 
 function RoundEndScreenTest({ hostages, onReady = () => { }, onForceReady }) {
 
+    const { t } = useTranslation();
+
     return (
         <div className='absolute inset-0 flex flex-col items-center justify-center gap-4'>
             <div className='bg-blue-800 -z-10 w-[54vw] aspect-square absolute -top-[35vw] -left-[20vw] rotate-[57deg] ' />
@@ -1561,11 +1724,11 @@ function RoundEndScreenTest({ hostages, onReady = () => { }, onForceReady }) {
 
             <div className='flex flex-col items-center justify-center gap-4 -translate-y-4'>
                 <h1 className='font-extrabold text-6xl text-blue-800 text-title'>{hostages}</h1>
-                <h2 className='font-extrabold text-3xl text-blue-800 uppercase tracking-tighter'>Hostages</h2>
+                <h2 className='font-extrabold text-3xl text-blue-800 uppercase tracking-tighter'>{t("hostages_plural")}</h2>
 
                 <ReadyButton onReady={onReady} className='!bg-blue-800' />
 
-                {onForceReady && <div onClick={onForceReady} className='text-normal underline text-sm text-blue-800 mt-2 cursor-pointer'>Force next round</div>}
+                {onForceReady && <div onClick={onForceReady} className='text-normal underline text-sm text-blue-800 mt-2 cursor-pointer'>{t("force_next")}</div>}
 
             </div>
         </div>
@@ -1574,27 +1737,26 @@ function RoundEndScreenTest({ hostages, onReady = () => { }, onForceReady }) {
 
 function RoundEndScreen({ hostages, onReady = () => { }, onForceReady }) {
 
-
-
+    const { t } = useTranslation();
 
     return (
         <div className='absolute inset-0 flex flex-col items-center justify-start pt-20 screen-bg-blue font-extrabold text-title text-white drop-shadow-md text-4xl gap-3 text-center overflow-y-scroll overflow-hidden scrollbar-hide'>
 
-            <h2 style={{ animationDelay: "0ms" }} className='animate__animated animate__fadeInUp '>Round over!</h2>
-            <h3 style={{ animationDelay: "600ms" }} className='animate__animated animate__fadeInUp text-2xl text-normal -mt-2 mb-1'>Leaders, select...</h3>
+            <h2 style={{ animationDelay: "0ms" }} className='animate__animated animate__fadeInUp '>{t("round_over")}</h2>
+            <h3 style={{ animationDelay: "600ms" }} className='animate__animated animate__fadeInUp text-2xl text-normal -mt-2 mb-1'>{t("leaders_select")}</h3>
 
             <RadialNumberAnnouncement number={hostages} />
 
-            <h3 style={{ animationDelay: "1000ms" }} className='animate__animated animate__fadeInUp text-2xl text-normal mt-1 mb-4 '>...hostage{hostages === 1 ? "" : "s"}.</h3>
+            <h3 style={{ animationDelay: "1000ms" }} className='animate__animated animate__fadeInUp text-2xl text-normal mt-1 mb-4 '>...{t("hostages_plural")}{hostages === 1 ? "" : (t("hostages_plural").endsWith("s") ? "" : "s")}.</h3>
             <ul style={{ animationDelay: "1600ms" }} className='animate__animated animate__fadeInUp w-full text-normal text-xl font-medium text-left px-4 flex flex-col items-center gap-1.5'>
-                <Li title="2. Parlay" delay={1800}>
-                    Leaders meet between rooms without hostages.
+                <Li title={t("parlay")} delay={1800}>
+                    {t("parlay_desc")}
                 </Li>
-                <Li title="3. Exchange hostages" delay={2000}>
-                    Equal number of hostages are exchanged.
+                <Li title={t("exchange_hostages")} delay={2000}>
+                    {t("exchange_hostages_desc")}
                 </Li>
-                <Li title="4. Ready up!" delay={2200}>
-                    Hit ready when leaders return to room.
+                <Li title={"4. " + t("ready_up")} delay={2200}>
+                    {t("ready_up_desc")}
                 </Li>
             </ul>
 
@@ -1602,7 +1764,7 @@ function RoundEndScreen({ hostages, onReady = () => { }, onForceReady }) {
 
                 <ReadyButton onReady={onReady} />
 
-                {onForceReady && <div onClick={onForceReady} className='text-normal underline text-sm text-white mt-2 cursor-pointer'>Force next round</div>}
+                {onForceReady && <div onClick={onForceReady} className='text-normal underline text-sm text-white mt-2 cursor-pointer'>{t("force_next")}</div>}
             </div>
         </div>
     )
@@ -1614,6 +1776,7 @@ function RoundEndScreen({ hostages, onReady = () => { }, onForceReady }) {
 
 function ReadyButton({ onReady, className = "" }) {
     const [clicked, setClicked] = useState(false);
+    const { t } = useTranslation();
 
     function handleClick() {
         onReady();
@@ -1621,7 +1784,7 @@ function ReadyButton({ onReady, className = "" }) {
     }
 
 
-    return (<button onClick={!clicked ? handleClick : () => { }} className={'btn btn-wide mt-4 ' + (clicked ? "opacity-50 " : "  ") + className}>{clicked ? "Waiting..." : "Ready!"}</button>)
+    return (<button onClick={!clicked ? handleClick : () => { }} className={'btn btn-wide mt-4 ' + (clicked ? "opacity-50 " : "  ") + className}>{clicked ? t("waiting") : t("ready")}</button>)
 }
 
 
@@ -1648,12 +1811,7 @@ function RadialNumberAnnouncement({ number = 0 }) {
 
 function PauseGameNumberScreen({ meId, onClick = () => { }, player }) {
 
-    const { setMenu } = useContext(PageContext);
-
-
-    const [playerData, setPlayerData] = useState(player);
-    const [card, setCard] = useState(getCardFromId(player?.card));
-    const [playerChanged, setPlayerChanged] = useState(false);
+    const { t } = useTranslation();
 
 
     useEffect(() => {
@@ -1672,12 +1830,12 @@ function PauseGameNumberScreen({ meId, onClick = () => { }, player }) {
     return (
         <div className='absolute inset-0 flex flex-col items-center justify-start pt-20 screen-bg-orange font-extrabold text-title text-white drop-shadow-md text-3xl gap-3 text-center overflow-y-scroll overflow-hidden scrollbar-hide'>
 
-            <h2 style={{ animationDelay: "0ms" }} className='animate__animated animate__fadeInUp '>Announcements</h2>
+            <h2 style={{ animationDelay: "0ms" }} className='animate__animated animate__fadeInUp '>{t("announcements")}</h2>
 
 
 
 
-            <h3 style={{ animationDelay: "800ms" }} className='animate__animated animate__fadeInUp text-normal text-lg font-semibold -mt-3 '>{meId === playerData?.id ? `You have pause game number ${card?.pausegamenr}` : `Pause game number ${card?.pausegamenr || 5}`}</h3>
+            <h3 style={{ animationDelay: "800ms" }} className='animate__animated animate__fadeInUp text-normal text-lg font-semibold -mt-3 '>{meId === playerData?.id ? `${t("you_have_pause_number")} ${card?.pausegamenr}` : `Pause game number ${card?.pausegamenr || 5}`}</h3>
 
             <h3 style={{ animationDelay: "1000ms" }} className='animate__animated animate__fadeInUp text-xs text-normal font-light -mt-3 '>(Rulebook page 10)</h3>
 
@@ -1692,7 +1850,7 @@ function PauseGameNumberScreen({ meId, onClick = () => { }, player }) {
                                 <CardInfoMenu card={card} color={card.color} />
                             )
                         }} card={card} color={card.color} />
-                        <button className='btn-accent btn btn-wide' onClick={onClick}>Next</button>
+                        <button className='btn-accent btn btn-wide' onClick={onClick}>{t("select")}</button>
                     </div>
                     :
                     <div className='w-full flex flex-col items-center p-4 mt-8 gap-2'>
@@ -1701,12 +1859,12 @@ function PauseGameNumberScreen({ meId, onClick = () => { }, player }) {
                             <Avatar className="w-full h-full" {...playerData?.avaConfig} />
                         </div>
                         <h1 className=' truncate text-3xl'>{playerData?.name}</h1>
-                        <h2 className='text-lg text-normal -mt-2'>...is presenting their card</h2>
-                        <p className='text-lg text-normal'>🚫 Do not reveal your card to anyone yet.</p>
+                        <h2 className='text-lg text-normal -mt-2'>...{t("is_presenting_card")}</h2>
+                        <p className='text-lg text-normal'>{t("do_not_reveal_yet")}</p>
 
 
 
-                        {meId?.toUpperCase() === "HOST" && <button className='text-normal font-light text-sm underline mt-6' onClick={onClick}>Force next</button>}
+                        {meId?.toUpperCase() === "HOST" && <button className='text-normal font-light text-sm underline mt-6' onClick={onClick}>{t("force_next")}</button>}
 
                     </div>
                 }
@@ -1731,11 +1889,37 @@ function PauseGameNumberScreen({ meId, onClick = () => { }, player }) {
 
 
 
-function RevealAllScreen({ onLobby, onClose, card, buriedCard }) {
+function RevealAllScreen({ onLobby, onClose, onLeave, card, buriedCard, winResult }) {
 
 
     const { setMenu } = useContext(PageContext)
+    const { t } = useTranslation();
 
+    let winMessage = null;
+    let winColor = "text-white";
+    if (winResult === "red_wins") {
+        if (card?.color_name === "red") {
+            winMessage = t("you_won");
+            winColor = "text-green-400";
+        } else if (card?.color_name === "blue") {
+            winMessage = t("you_lost");
+            winColor = "text-red-400";
+        } else {
+            winMessage = t("red_team_wins");
+            winColor = "text-[#ec1f2b]";
+        }
+    } else if (winResult === "blue_wins") {
+        if (card?.color_name === "blue") {
+             winMessage = t("you_won");
+             winColor = "text-green-400";
+        } else if (card?.color_name === "red") {
+             winMessage = t("you_lost");
+             winColor = "text-red-400";
+        } else {
+             winMessage = t("blue_team_wins");
+             winColor = "text-[#4f94ff]";
+        }
+    }
 
     return (
         <>
@@ -1748,8 +1932,15 @@ function RevealAllScreen({ onLobby, onClose, card, buriedCard }) {
 
 
 
-                <h2 style={{ animationDelay: "0ms" }} className='animate__animated animate__fadeInUp '>Game over!</h2>
-                <h3 style={{ animationDelay: "600ms" }} className='animate__animated animate__fadeInUp text-2xl text-normal -mt-2 mb-1'>Reveal your card!</h3>
+                <h2 style={{ animationDelay: "0ms" }} className='animate__animated animate__fadeInUp '>{t("game_over")}</h2>
+                
+                {winMessage && (
+                    <h1 style={{ animationDelay: "300ms", textShadow: "0 2px 4px rgba(0,0,0,0.5)" }} className={`animate__animated animate__fadeInUp text-5xl my-2 ${winColor}`}>
+                        {winMessage}
+                    </h1>
+                )}
+                
+                <h3 style={{ animationDelay: "600ms" }} className='animate__animated animate__fadeInUp text-2xl text-normal -mt-2 mb-1'>{t("reveal_your_card")}</h3>
 
                 <div style={{ animationDelay: "1200ms" }} className='animate__animated animate__fadeInUp my-6 font-normal'>
                     {card && <CardFront onClick={() => {
@@ -1761,7 +1952,7 @@ function RevealAllScreen({ onLobby, onClose, card, buriedCard }) {
 
                 {buriedCard && <div style={{ animationDelay: "2200ms" }} className=' animate__animated animate__fadeInUp flex items-center justify-center w-full gap-6 -my-4'>
                     <div className='text-title font-extrabold text-xl'>
-                        BURIED CARD:
+                        {t("buried_card_label")}
                     </div>
                     <div className='scale-[16%] -m-28 -my-40'>
                         <CardFront onClick={() => {
@@ -1774,12 +1965,11 @@ function RevealAllScreen({ onLobby, onClose, card, buriedCard }) {
 
                 <div style={{ animationDelay: "3000ms" }} className='w-full flex flex-col items-center animate__animated animate__fadeInUp'>
 
-                    {onLobby && <button onClick={onLobby} className='btn btn-wide btn-success text-title font-extrabold mt-6'>Return to lobby!</button>}
-                    {onClose && <button onClick={onClose} className='underline text-normal text-sm mt-4' >Close game</button>}
+                    {onLobby && <button onClick={onLobby} className='btn btn-wide btn-success text-title font-extrabold mt-6'>{t("back_to_lobby_upper")}</button>}
+                    {onClose && <button onClick={onClose} className='underline text-normal text-sm mt-4' >{t("close_game")}</button>}
+                    {onLeave && !onLobby && <button onClick={onLeave} className='btn btn-wide btn-ghost text-title font-extrabold mt-6 text-white/60'>{t("leave")}</button>}
 
                 </div>
-
-                {!onLobby && !onClose && <a style={{ animationDelay: "3000ms" }} href="/" className=" animate__animated animate__fadeIn underline text-normal font-normal text-sm mt-8 z-20 w-full text-center text-base-100">Leave</a>}
 
             </div>
         </>
@@ -1794,6 +1984,7 @@ function RevealAllScreen({ onLobby, onClose, card, buriedCard }) {
 // Custom toasts
 
 function CardRevealToast({ card, player }) {
+    const { t } = useTranslation();
     if (!card || !player) return (<></>)
 
 
@@ -1804,9 +1995,9 @@ function CardRevealToast({ card, player }) {
     return (
         <div className='w-full max-w-md text-base-content bg-base-100 shadow grid grid-cols-[3rem_minmax(0,_1fr)] items-center justify-start rounded px-3 py-2'>
             <div className='card relative scale-[18%] -m-28 -my-40'><CardFront card={card} color={card?.color} /></div>
-            <div className='w-full flex flex-col pl-2.5' onClick={() => setHidden(true)}>
+            <div className='w-full flex flex-col pl-2.5'>
                 <div className='text-title font-extrabold opacity-70 text-xs w-full flex items-center'>
-                    <TbPlayCard size={18} className='mr-1' /> <p>CARD REVEAL</p>
+                    <TbPlayCard size={18} className='mr-1' /> <p>{t("card_reveal_title").toUpperCase()}</p>
                 </div>
                 <div className='text-title font-extrabold text-sm sm:text-lg pl-1 w-full overflow-clip flex items-center justify-start gap-1.5 flex-nowrap whitespace-nowrap pr-2'><div className='truncate shrink'>{player?.name}</div> is <div style={{ color: card?.color?.primary }}>{card?.name}</div></div>
             </div>
@@ -1817,6 +2008,7 @@ function CardRevealToast({ card, player }) {
 
 
 function ColorRevealToast({ color, player }) {
+    const { t } = useTranslation();
     if (!color || !player) return (<></>)
 
 
@@ -1827,7 +2019,7 @@ function ColorRevealToast({ color, player }) {
         <div style={{ backgroundColor: color?.secondary, color: color?.primary }} className='h-12 w-12 rounded-lg text-xl flex items-center justify-center'>{<color.icon />}</div>
         <div className=' grow flex flex-col pl-3'>
             <div className='text-title font-extrabold opacity-70 text-xs w-full flex items-center'>
-                <IoColorPaletteSharp size={18} className='mr-1' /> <p>COLOR REVEAL</p>
+                <IoColorPaletteSharp size={18} className='mr-1' /> <p>{t("color_reveal_title").toUpperCase()}</p>
             </div>
             <div className='text-title font-extrabold text-sm sm:text-lg pl-1 w-full overflow-clip flex items-center justify-start gap-1.5 flex-nowrap whitespace-nowrap pr-2'><div className='truncate shrink'>{player?.name}</div> is in <div style={{ color: color?.primary }}>{color?.title}</div></div>
         </div>

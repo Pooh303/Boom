@@ -5,8 +5,10 @@ import { FcGoogle } from "react-icons/fc"
 
 import supabase from "../../supabase";
 import {toast} from "react-hot-toast";
+import { useTranslation } from "../../config/i18n";
 
 export default function LoginMenu() {
+    const { t } = useTranslation();
 
 
     async function loginGoogle() {
@@ -33,7 +35,7 @@ export default function LoginMenu() {
                 <img src={"/login.png"} className="w-full h-full" />
             </div>
 
-            <h2 className="font-extrabold text-2xl -mt-2">Kaboom login!</h2>
+            <h2 className="font-extrabold text-2xl -mt-2">{t("login_title")}</h2>
 
             <div className="flex flex-col w-full items-center gap-2">
                 <LoginButton onClick={() => loginDiscord()} Icon={<BsDiscord />} style={{ backgroundColor: "#5865F2", color: "#ffffff", border: "2px solid #5865F2" }}>Discord</LoginButton>
@@ -41,9 +43,7 @@ export default function LoginMenu() {
             </div>
 
             <p className="text-xs font-light text-neutral/60 w-full text-center px-4">
-                By logging in, you agree to our <a href="/privacy" className="underline">Privacy Policy</a> and <a href="/terms" className="underline">Terms of Service</a>
-                <br />
-                We only use essential cookies!
+                {t("login_agreement")} <a href="/privacy" className="underline">{t("privacy_policy")}</a> {t("and")} <a href="/terms" className="underline">{t("terms")}</a>
             </p>
         </div >
     );

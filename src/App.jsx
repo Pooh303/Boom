@@ -42,7 +42,6 @@ import supabase from './supabase';
 import PlaysetView from './views/playsets/PlaysetView';
 import ProfileView from './views/ProfileView';
 import PlaysetsView from './views/playsets/PlaysetsView';
-import CookieConsent from 'react-cookie-consent';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import WorkbenchRedirectView from './views/playsets/workbenchComponents/RedirectView';
 import { Helmet } from 'react-helmet';
@@ -74,8 +73,12 @@ function App() {
 
   const [user, setUser] = useState(null);
 
+  const [language, setLanguage] = useState(localStorage.getItem("language") || "th");
 
-
+  function changeLanguage(lang) {
+    localStorage.setItem("language", lang);
+    setLanguage(lang);
+  }
 
   useEffect(() => {
     // devMode
@@ -221,7 +224,7 @@ function App() {
   return (
 
     <QueryClientProvider client={queryClient}>
-      <div className="App absolute inset-0 overflow-hidden scrollbar-hide">
+      <div className={`App absolute inset-0 overflow-hidden scrollbar-hide lang-${language}`}>
 
         <Helmet>
 
@@ -232,47 +235,45 @@ function App() {
           <meta name="description" content="Kaboom, a Two Rooms and a Boom online web app adaptation. Play kaboom card game online for free." />
           <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         </Helmet>
-        <Toaster
-          position="top-left"
-          reverseOrder={false}
-          gutter={8}
-          containerClassName=""
+        <PageContextProvider value={{ user, setUser, getUser, hasPermission, checkAuth, logout, smoothNavigate, redirect, allLocalStorage, theme, switchTheme, setPrompt, connectionErrorPrompt, menu, setMenu, setOnMenuHide, menu2, setMenu2, setOnMenuHide2, showLoginMenu, pageCover, setPageCover, devMode, setDevMode, language, changeLanguage }}>
+          <Toaster
+            position="top-left"
+            reverseOrder={false}
+            gutter={8}
+            containerClassName=""
 
-          containerStyle={{}}
-          toastOptions={{
+            containerStyle={{}}
+            toastOptions={{
 
-            // Define default options
-            duration: 5000,
-            style: {
-              background: '#ffffff',
-              color: '#000000',
-            },
-
-            // Default options for specific types
-            success: {
-              duration: 3000,
-              theme: {
-                primary: 'green',
-                secondary: 'black',
+              // Define default options
+              duration: 5000,
+              style: {
+                background: '#ffffff',
+                color: '#000000',
               },
-            },
+
+              // Default options for specific types
+              success: {
+                duration: 3000,
+                theme: {
+                  primary: 'green',
+                  secondary: 'black',
+                },
+              },
 
 
-          }}>
-          {(t) => (
-            <ToastBar toast={t}>
-              {({ icon, message }) => (
-                <div className='w-full max-w-md flex items-center ' onClick={() => toast.dismiss(t.id)}>
-                  {icon}
-                  {message}
-                </div>
-              )}
-            </ToastBar>
-          )}
-        </Toaster>
-
-
-        <PageContextProvider value={{ user, setUser, getUser, hasPermission, checkAuth, logout, smoothNavigate, redirect, allLocalStorage, theme, switchTheme, setPrompt, connectionErrorPrompt, menu, setMenu, setOnMenuHide, menu2, setMenu2, setOnMenuHide2, showLoginMenu, pageCover, setPageCover, devMode, setDevMode }}>
+            }}>
+            {(t) => (
+              <ToastBar toast={t}>
+                {({ icon, message }) => (
+                  <div className='w-full max-w-md flex items-center ' onClick={() => toast.dismiss(t.id)}>
+                    {icon}
+                    {message}
+                  </div>
+                )}
+              </ToastBar>
+            )}
+          </Toaster>
           {pageCover && <PageCover {...pageCover} />}
           {prompt && <Prompt noCancel={prompt?.noCancel} onApprove={promptApprove} onCancel={promptCancel} title={prompt?.title} text={prompt?.text} element={prompt?.element} />}
           {menu2 && <Menu2 onCancel={menuHide2}>{menu2}</Menu2>}
@@ -319,21 +320,6 @@ function App() {
 
 
           </Routes>
-          <CookieConsent
-            location="bottom"
-            buttonText="Accept"
-            cookieName="consent-cookie"
-            style={{ width: "fit-content", margin: "0.5rem", border: "2px solid #000000", color: "#000", background: "#fff", fontSize: "13px", borderRadius: "0.5rem", padding: "0.5rem" }}
-            className="rounded-lg"
-            buttonClasses="btn btn-sm btn-secondary text-title rounded"
-            buttonStyle={{ backgroundColor: "#000000", color: "#fff", fontSize: "13px", borderRadius: "0.5rem", padding: "0.5rem", margin: "0.5rem" }}
-          >
-            <div className="flex flex-col pt-0">
-              <p>🍪 We use only essential cookies to persist game data</p>
-              <p className="text-xs">We won't share anything with 3rd parties</p>
-            </div>
-
-          </CookieConsent>
         </PageContextProvider>
         {/*         {isBeta && <BetaBanner />} */}
 

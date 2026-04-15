@@ -1,24 +1,30 @@
 [
     {
         "name": "RECRUIT",
+        "name_th": "เด็กฝึก (Recruit)",
         "id": "y002",
         "description": "IF THERE IS NO ASSASSIN, BE THE ASSASSIN",
+        "description_th": "หากไม่มีนักฆ่า ให้คุณเป็นนักฆ่าแทน",
         "links": [],
         "backup_for": "y001",
         "src": "",
         "info": "You are the backup character for the Assassin. If the Assassin card is buried you must carry out all responsibilities associated with the Assassin. You also gain all his initial powers.\r\n\r\nYou are his student, the next in command and only a huge deal if the Assassin card is buried.",
+        "info_th": "คุณคือตัวละครสำรองของนักฆ่า (Assassin) หากการ์ดนักฆ่าถูกฝังไว้ (Buried - ไม่ได้ถูกนำมาแจกในเกม) คุณจะต้องรับหน้าที่และเป้าหมายการชนะทั้งหมดของนักฆ่าแทน นอกจากนี้คุณยังจะได้รับพลังเริ่มต้นทั้งหมดของเขาด้วย\n\nคุณคือลูกศิษย์ของเขา เป็นผู้สืบทอดตำแหน่ง และจะกลายเป็นคนสำคัญก็ต่อเมื่อการ์ดนักฆ่าถูกฝังไว้เท่านั้น",
         "tags": "custom patch1 v2 friends",
         "color_name": "yellow",
         "difficulty": 5
     },
     {
         "name": "YOUNGLING",
+        "name_th": "เด็กน้อย (Youngling)",
         "id": "y004",
         "description": "IF THERE IS NO WEAPONSMITH, BE THE WEAPONSMITH",
+        "description_th": "หากไม่มีช่างทำอาวุธ ให้คุณเป็นช่างทำอาวุธแทน",
         "links": [],
         "backup_for": "y003",
         "src": "",
         "info": "You are the backup character for the Weaponsmith. If the Weaponsmith card is buried, you must carry out Weaponsmith responsibilities (i.e. card sharing with the Assassin).",
+        "info_th": "คุณคือตัวละครสำรองของช่างทำอาวุธ (Weaponsmith) หากการ์ดช่างทำอาวุธถูกฝังไว้ (Buried) คุณจะต้องรับหน้าที่แทนช่างทำอาวุธ (นั่นคือ ต้องทำการเปิดเผยการ์ด (Card Share) กับนักฆ่า)",
         "tags": "custom patch1 v2 friends",
         "color_name": "yellow",
         "difficulty": 5

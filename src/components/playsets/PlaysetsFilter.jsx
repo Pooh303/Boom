@@ -19,10 +19,10 @@ import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import NewPage from "./filters/NewPage.jsx";
 import PlaysetQueryList from "./filters/_components/PlaysetQueryList.jsx";
 import useDebounce from "../../hooks/useDebounce.jsx";
-import moment from "moment";
+import dayjs from "dayjs";
 
 import { v4 as uuidv4 } from "uuid";
-import useLocalStorage from "use-local-storage";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 
 const TABS = [
@@ -39,7 +39,7 @@ const TABS = [
     //     color: "#f72b02",
     //     icon: <GiFireBomb className="text-base" />,
     //     filterFn: (query) => {
-    //         const startOfMonth = moment().subtract(1, "month").startOf('day').toISOString(true);
+    //         const startOfMonth = dayjs().subtract(1, "month").startOf('day').toISOString(true);
     //         return query
     //         .order("count", { ascending: false, referencedTable: "upvote_count" })
     //     }

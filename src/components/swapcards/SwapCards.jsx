@@ -1,21 +1,20 @@
-import Avatar from 'react-nice-avatar-vite-prod-fork'
-
-
-import {VscArrowSwap} from "react-icons/vsc"
-
+import { useTranslation } from '../../config/i18n';
+import { VscArrowSwap } from 'react-icons/vsc';
+import Avatar from 'react-nice-avatar-vite-prod-fork';
 
 export function SwapPropmt({ initPlayer, withPlayer, onCancel = () => { }, onAccept }) { // onAccept === true => requestee
+    const { t } = useTranslation();
 
     return (
         <div className="flex flex-col w-full gap-2">
             <div className="text-title font-extrabold text-xl flex flex-col items-center w-full text-center">
                 {onAccept ?
                     <>
-                        <h1><span className="text-secondary">{initPlayer?.name || "someone"}</span> wants to swap cards</h1>
-                        <h3 className="text-normal font-normal text-base">Only swap if the game instructs you to.</h3>
+                        <h1><span className="text-secondary">{initPlayer?.name || "someone"}</span> {t("wants_to_swap")}</h1>
+                        <h3 className="text-normal font-normal text-base">{t("swap_instruction")}</h3>
                     </>
                     :
-                    <h1>waiting for <span className="text-primary">{withPlayer?.name || "player"}</span>...</h1>
+                    <h1>{t("waiting_for")} <span className="text-primary">{withPlayer?.name || "player"}</span>...</h1>
                 }
             </div>
             <div className="flex items-center justify-around w-full p-4 py-6">
@@ -23,8 +22,8 @@ export function SwapPropmt({ initPlayer, withPlayer, onCancel = () => { }, onAcc
                 <div className='text-3xl animate-size-pulse'><VscArrowSwap /></div>
                 <Ava loading={!onAccept} config={withPlayer?.avaConfig} />
             </div>
-            {onAccept && <button onClick={onAccept} className='btn btn-primary text-title font-extrabold text-lg'>SWAP!</button>}
-            <button onClick={onCancel} className='btn-neutral btn text-title font-bold text-base'>{onAccept ? "DENY" : "CANCEL REQUEST"}</button>
+            {onAccept && <button onClick={onAccept} className='btn btn-primary text-title font-extrabold text-lg'>{t("swap_button")}</button>}
+            <button onClick={onCancel} className='btn-neutral btn text-title font-bold text-base'>{onAccept ? t("deny") : t("cancel_request")}</button>
         </div>
     )
 }

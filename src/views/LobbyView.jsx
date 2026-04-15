@@ -1,15 +1,12 @@
-import { useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useContext, useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { PageContext } from '../components/PageContextProvider';
+import { useTranslation } from '../config/i18n';
 
 
-import moment from 'moment/moment';
-
-
-import Peer from 'peerjs';
+import dayjs from "dayjs";
 
 // helpers
-import { constructPeerID, getPeerConfig } from '../helpers/peerid';
 import { idGenAlphabet } from '../helpers/idgen';
 import { getPlaysetById, maximizePlayset } from '../helpers/playsets';
 
@@ -18,6 +15,7 @@ import { getPlaysetById, maximizePlayset } from '../helpers/playsets';
 import { IoPersonRemoveSharp } from "react-icons/io5"
 import { HiQrCode, HiUsers } from "react-icons/hi2"
 import { BiError } from "react-icons/bi"
+import { FiLink } from 'react-icons/fi';
 
 
 //components
@@ -46,25 +44,17 @@ import supabase from '../supabase';
 
 const ROUND_TABS = [
     {
-        name: "Recommended",
+        key: "recommended",
         value: "recommended",
         color: "#0019fd",
         icon: <FaThumbsUp className="text-base" />,
     },
     {
-        name: "Custom",
+        key: "custom",
         value: "custom",
         color: "#27d62a",
         icon: <BsGearFill className="text-base" />,
     },
-    // {
-    //     name: "From playset",
-    //     value: "playset",
-    //     color: "#c342ff",
-    //     icon: <BsCassetteFill className="text-base" />,
-    // },
-
-
 ]
 
 
@@ -77,6 +67,7 @@ function LobbyView(props) {
     const [me, setMe] = useState(null);
 
     const { redirect, setMenu } = useContext(PageContext);
+    const { t } = useTranslation();
 
     const { code } = useParams();
 
@@ -101,11 +92,27 @@ function LobbyView(props) {
         )
     }
 
+    function copyLink() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            toast.success(t("link_copied"), {
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
+        });
+    }
+
 
 
     return (
         <div className='flex flex-col justify-start items-center w-full h-full overflow-hidden'>
-            <div className='absolute top-3 right-3 p-3 text-3xl' onClick={openQRCode}><HiQrCode /></div>
+            <div className='absolute top-3 right-3 flex items-center gap-1 z-50'>
+                <div className='p-3 text-2xl hover:bg-white/10 rounded-full transition-all cursor-pointer' onClick={copyLink} title={t("copy_link")}><FiLink /></div>
+                <div className='p-3 text-3xl hover:bg-white/10 rounded-full transition-all cursor-pointer' onClick={openQRCode}><HiQrCode /></div>
+            </div>
             <div className='flex flex-col justify-start items-center text-title p-4 w-full'>
                 <a href='/' className='text-primary text-lg'>KABOOM</a>
                 <h1 className='text-secondary text-4xl skew font-extrabold'>{code}</h1>
@@ -120,6 +127,7 @@ function LobbyView(props) {
 function ClientLobby({ me, setMe, code }) {
 
     const { connectionErrorPrompt, redirect, setPrompt } = useContext(PageContext);
+    const { t } = useTranslation();
 
     const [loading, setLoading] = useState(true);
 
@@ -130,87 +138,94 @@ function ClientLobby({ me, setMe, code }) {
     const [selectedRoundTabByHost, setSelectedRoundTabByHost] = useState(ROUND_TABS[0]?.value);
     const [roundConfig, setRoundConfig] = useState(generateDefaultRounds(playerList?.length || 1));
 
-    const [conn, setConn] = useState(null);
+    const channel = useRef(null);
 
 
     const player_data = JSON.parse(localStorage.getItem("player-" + code));
 
 
     useEffect(() => {
-        startPeer();
-
+        initSupabase();
     }, [])
 
 
     useEffect(() => {
-        if (conn) {
-            const player_data = JSON.parse(localStorage.getItem("player-" + code));
-            if (ready) conn.send({ intent: "ready", payload: { ...player_data } })
-            if (!ready) conn.send({ intent: "unready", payload: { ...player_data } })
-
+        if (channel.current && me?.id) {
+            channel.current.send({
+                type: 'broadcast',
+                event: 'client_action',
+                payload: { intent: ready ? "ready" : "unready", payload: { id: me.id } }
+            });
         }
-    }, [ready])
+    }, [ready, me?.id])
 
 
-    async function startPeer() {
-        const peer = new Peer(await getPeerConfig());
-
-        peer.on("open", () => {
-            var conn = peer.connect(constructPeerID(code, "host"));
-
-            conn.on("open", () => {
-                conn.send({ intent: "join", payload: { name: player_data.name, id: player_data?.id, userId: player_data?.userId } })
-                setConn(conn);
-            })
-
-
-            conn.on("data", data => {
-                switch (data?.intent) {
-                    case "player_list": // also carries playset
-                        setPlayerList(data?.payload?.players || [])
-                        getPlayset(data?.payload?.playsetId);
-                        if (data?.payload?.roundConfig) setRoundConfig(data?.payload?.roundConfig)
-                        if (data?.payload?.selectedRoundTabValue) setSelectedRoundTabByHost(ROUND_TABS.find(t => t?.value === data?.payload?.selectedRoundTabValue) || ROUND_TABS[0])
-                        break;
-                    case "joined_lobby":
-                        setPlayerList(data?.payload?.players || [])
-                        let newMe = { ...player_data, id: data?.payload?.myId }
-                        localStorage.setItem("player-" + code, JSON.stringify(newMe))
-                        setMe(newMe)
-                        setLoading(false)
-                        break;
-                    case "redirect":
-                        if (data?.payload?.to) {
-                            setTimeout(() => {
-                                setPrompt(null)
-                            }, 300)
-                            setTimeout(() => {
-                                conn.close();
-                                peer.destroy();
-                                redirect(data?.payload?.to)
-
-                            }, 1000)
-
-                        }
-                        break;
-                }
-            })
-
-
-            conn.on("error", () => connectionErrorPrompt())
-
-            conn.on("close", () => connectionErrorPrompt())
+    async function initSupabase() {
+        const chan = supabase.channel(`lobby-${code}`, {
+            config: {
+                broadcast: { self: false },
+            }
         })
 
+        channel.current = chan;
 
-
-        peer.on("error", () => connectionErrorPrompt())
-
-        peer.on("disconnected", (err) => {
-            connectionErrorPrompt(true)
+        chan.on('broadcast', { event: 'lobby_sync' }, ({ payload }) => {
+            if (payload?.players) setPlayerList(payload.players);
+            if (payload?.playsetId) getPlayset(payload.playsetId);
+            if (payload?.roundConfig) setRoundConfig(payload.roundConfig);
+            if (payload?.selectedRoundTabValue) {
+                setSelectedRoundTabByHost(ROUND_TABS.find(t => t?.value === payload.selectedRoundTabValue) || ROUND_TABS[0]);
+            }
+            setLoading(false);
         })
+        .on('broadcast', { event: 'joined_lobby' }, ({ payload }) => {
+            if (payload?.myId && payload?.targetId === player_data?.id) {
+                let newMe = { ...player_data, id: payload.myId };
+                localStorage.setItem("player-" + code, JSON.stringify(newMe));
+                setMe(newMe);
+                setLoading(false);
+            }
+        })
+        .on('broadcast', { event: 'redirect' }, ({ payload }) => {
+            if (payload?.to) {
+                // If targetId is specified, only redirect that specific player
+                if (payload?.targetId && payload.targetId !== me?.id) return;
+                setTimeout(() => setPrompt(null), 300);
+                setTimeout(() => {
+                    chan.unsubscribe();
+                    redirect(payload.to);
+                }, 1000);
+            }
+        })
+        .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                chan.send({
+                    type: 'broadcast',
+                    event: 'client_action',
+                    payload: { intent: "join", payload: { name: player_data.name, id: player_data?.id, userId: player_data?.userId } }
+                });
+            }
+        });
 
-
+        // Listen for Host reconnecting to resync presence
+        chan.on('broadcast', { event: 'client_action' }, ({ payload }) => {
+            if (payload?.intent === "host_reconnected") {
+                chan.send({
+                    type: 'broadcast',
+                    event: 'client_action',
+                    payload: { intent: "join", payload: { name: player_data.name, id: player_data?.id, userId: player_data?.userId } }
+                });
+                
+                // Resend ready state slightly after
+                setTimeout(() => {
+                    chan.send({
+                        type: 'broadcast',
+                        event: 'client_action',
+                        payload: { intent: ready ? "ready" : "unready", payload: { id: player_data?.id } }
+                    });
+                }, 500);
+            }
+        });
     }
 
 
@@ -234,17 +249,25 @@ function ClientLobby({ me, setMe, code }) {
 
             <Lobby me={me} players={playerList} code={code} />
             <div className='w-full max-w-2xl p-4 gap-2 flex flex-col justify-start items-center'>
-                <button className={'w-full btn text-title text-primary-content' + (ready ? " btn-success " : " btn-accent ")} onClick={() => setReady(!ready)}>{ready ? "Ready!" : "Ready up!"}</button>
-                <button className={'w-full btn text-title btn-ghost text-neutral'} onClick={() => changeName()}>change name</button>
-                <button className='link font-bold clickable' onClick={() => { conn?.send({ intent: "leave", payload: { id: me?.id } }); redirect("/") }}>Leave</button>
+                <button className={'w-full btn text-title text-primary-content' + (ready ? " btn-success " : " btn-accent ")} onClick={() => setReady(!ready)}>{ready ? t("ready") : t("ready_up")}</button>
+                <button className={'w-full btn text-title btn-ghost text-neutral'} onClick={() => changeName()}>{t("change_name")}</button>
+                <button className='link font-bold clickable' onClick={() => { 
+                    channel.current?.send({ 
+                        type: 'broadcast', 
+                        event: 'client_action', 
+                        payload: { intent: "leave", payload: { id: me?.id } } 
+                    }); 
+                    redirect("/") 
+                }}>{t("leave")}</button>
             </div>
             <div className=' w-full max-w-2xl p-4 py-2 flex flex-col items-start mb-4'>
-                <h1 className='font-extrabold text-lg uppercase '>Selected Playset <span className=' font-extralight text-sm normal-case'>(by HOST)</span></h1>
+                <h1 className='font-extrabold text-lg uppercase '>{t("selected_playset")} <span className=' font-extralight text-sm normal-case'>{t("by_host")}</span></h1>
+                <p className="text-xs text-neutral-content/60 mb-1">💡 {t("click_cards_to_see_info")}</p>
                 <PlaysetDisplay autoFetchInteractions forceOpen selected playset={playset} />
                 <DescriptionBox description={playset?.description} />
             </div>
             <div className=' w-full max-w-2xl p-4 py-2 flex flex-col items-start -mt-4'>
-                <h1 className='font-extrabold text-lg uppercase '>Round configuration <span className=' font-extralight text-sm normal-case'>(by HOST)</span></h1>
+                <h1 className='font-extrabold text-lg uppercase '>{t("round_config")} <span className=' font-extralight text-sm normal-case'>{t("by_host")}</span></h1>
                 <RoundConfig
                     color={selectedRoundTabByHost?.color}
                     roundConfig={roundConfig} />
@@ -257,7 +280,7 @@ function ClientLobby({ me, setMe, code }) {
 
         <div className='flex flex-col justify-start items-center w-full'>
             <span className='loading loading-spinner'></span>
-            <a className='link font-bold clickable' href="/">Leave</a>
+            <a className='link font-bold clickable' href="/">{t("leave")}</a>
 
         </div>
     )
@@ -269,7 +292,7 @@ function ClientLobby({ me, setMe, code }) {
 function HostLobby({ me, code }) {
 
     const { redirect, devMode, setPrompt, connectionErrorPrompt, setPageCover, user } = useContext(PageContext);
-
+    const { t } = useTranslation();
 
     const player_data = JSON.parse(localStorage.getItem("player-" + code));
 
@@ -283,7 +306,7 @@ function HostLobby({ me, code }) {
 
     const [recommendBury, setRecommendBury] = useState(false);
 
-    const [peer, setPeer] = useState(null);
+    const channel = useRef(null);
 
 
 
@@ -297,9 +320,11 @@ function HostLobby({ me, code }) {
 
     const lastSelectedRoundTab = localStorage.getItem("lastSelectedRoundTab") || ROUND_TABS[0]?.value;
     const [selectedRoundTab, setSelectedRoundTab] = useState(ROUND_TABS?.find(tab => tab?.value === lastSelectedRoundTab) || ROUND_TABS[0])
+    const selectedRoundTabRef = useRef(selectedRoundTab);
 
     const lastCustomRoundConfig = JSON.parse(localStorage.getItem("lastCustomRoundConfig")) || generateDefaultRounds(players?.current?.length || 1);
     const [roundConfig, setRoundConfig] = useState(lastSelectedRoundTab === "custom" ? lastCustomRoundConfig : generateDefaultRounds(players?.current?.length || 1))
+    const roundConfigRef = useRef(roundConfig);
 
 
 
@@ -323,6 +348,8 @@ function HostLobby({ me, code }) {
 
 
     useEffect(() => {
+        roundConfigRef.current = roundConfig;
+        selectedRoundTabRef.current = selectedRoundTab;
 
         if (selectedRoundTab?.value === "custom") {
             localStorage.setItem("lastCustomRoundConfig", JSON.stringify(roundConfig))
@@ -330,15 +357,13 @@ function HostLobby({ me, code }) {
 
         updateAllClients();
 
-
-
     }, [roundConfig, selectedRoundTab])
 
 
 
     useEffect(() => {
         if (localStorage.getItem(`game-${code}`) && JSON.parse(localStorage.getItem(`game-${code}`))?.game) return redirect(`/game/${code}`)
-        startPeer();
+        initSupabase();
         getPlayset(localStorage.getItem("lastSelectedPlayset") || "00000000-0000-0000-0000-000000000000")
     }, [])
 
@@ -397,98 +422,56 @@ function HostLobby({ me, code }) {
 
 
 
-    async function startPeer() {
-        const peer = new Peer(constructPeerID(code, "host"), await getPeerConfig());
+    async function initSupabase() {
+        const chan = supabase.channel(`lobby-${code}`, {
+            config: {
+                broadcast: { self: false },
+            }
+        })
 
+        channel.current = chan;
 
-        setPeer(peer);
-
-
-
-
-
-        peer.on("connection", (conn) => {
-
-
-
-            conn.on("open", () => {
-
-
-
-                const playerID = { value: idGenAlphabet(3, [players.current.map(p => p.id)]) };
-
-
-                conn.on("data", (data) => {
-                    switch (data?.intent) {
-                        case "join":
-
-                            if (data?.payload?.id) playerID.value = data?.payload?.id
-
-                            console.log(data?.payload)
-
-                            addPlayer(playerID.value, data?.payload?.name, conn, data?.payload?.userId)
-
-                            conn.send({ intent: "joined_lobby", payload: { myId: playerID.value } })
-
-                            updateAllClients();
-
-
-
-                            break;
-
-                        case "leave":
-                            removePlayer(data?.payload?.id || playerID.value);
-
-                            setPlayersUpdated([])
-
-                            updateAllClients();
-                            break;
-
-                        case "ready":
-                            readyPlayer(data?.payload?.id, true)
-                            updateAllClients();
-                            break;
-                        case "unready":
-                            readyPlayer(data?.payload?.id, false)
-                            updateAllClients();
-                            break;
-                        case "connect":
-                            conn.send({ intent: "redirect", payload: { to: "/lobby/" + code } });
-
-                            break;
-                        default:
-                            return conn.close()
-                    }
-
-
-
-
-                });
-
-
-                conn.on("close", () => {
-                    players.current = players.current.map(p => (p?.id === playerID.value ? { ...p, conn: null } : p));
-
-                    setPlayersUpdated([])
-
+        chan.on('broadcast', { event: 'client_action' }, ({ payload: data }) => {
+            const playerID = { value: data?.payload?.id || idGenAlphabet(3, [players.current.map(p => p.id)]) };
+            
+            switch (data?.intent) {
+                case "join":
+                    addPlayer(playerID.value, data?.payload?.name, true, data?.payload?.userId)
+                    chan.send({
+                        type: 'broadcast',
+                        event: 'joined_lobby',
+                        payload: { myId: playerID.value, targetId: data?.payload?.id }
+                    })
                     updateAllClients();
+                    break;
 
-                })
+                case "leave":
+                    removePlayer(data?.payload?.id || playerID.value);
+                    setPlayersUpdated([])
+                    updateAllClients();
+                    break;
 
-
-
-            });
-
-
+                case "ready":
+                    readyPlayer(data?.payload?.id, true)
+                    updateAllClients();
+                    break;
+                case "unready":
+                    readyPlayer(data?.payload?.id, false)
+                    updateAllClients();
+                    break;
+                default:
+                    break;
+            }
+        })
+        .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                chan.send({
+                    type: 'broadcast',
+                    event: 'client_action',
+                    payload: { intent: "host_reconnected" }
+                });
+            }
         });
-
-        peer.on("error", (err) => {
-            console.log(err)
-        })
-
-        peer.on("disconnected", (err) => {
-            connectionErrorPrompt(true)
-        })
     }
 
 
@@ -505,11 +488,11 @@ function HostLobby({ me, code }) {
     }
 
 
-    const addPlayer = useCallback((id, name, conn, userId) => {
+    const addPlayer = useCallback((id, name, isConnected, userId) => {
 
         if (players.current.filter(p => p?.id === id)[0]) {
-            players.current = players.current.map(p => (p?.id === id ? { ...p, conn, name: (name ? name : p.name) } : p))
-        } else players.current.push({ id, name, conn, userId })
+            players.current = players.current.map(p => (p?.id === id ? { ...p, conn: isConnected, name: (name ? name : p.name) } : p))
+        } else players.current.push({ id, name, conn: isConnected, userId })
 
 
         updateRecommendedRounds();
@@ -536,7 +519,11 @@ function HostLobby({ me, code }) {
 
     const kickPlayer = useCallback((id) => {
         const player = players.current.filter(p => p.id == id)[0];
-        player?.conn?.send({ intent: "redirect", payload: { to: "/" } })
+        channel.current?.send({
+            type: 'broadcast',
+            event: 'redirect',
+            payload: { to: "/", targetId: id }
+        });
         removePlayer(id);
 
         updateRecommendedRounds();
@@ -548,20 +535,24 @@ function HostLobby({ me, code }) {
 
 
     function updateAllClients() {
-        for (let element of players.current) {
-            if (element.conn) {
-                element.conn.send({ intent: "player_list", payload: { players: players.current.map(p => ({ ...p, conn: undefined })), playsetId: playsetRef.current?.id, roundConfig, selectedRoundTabValue: selectedRoundTab?.value || ROUND_TABS[0]?.value } })
-
+        channel.current?.send({
+            type: 'broadcast',
+            event: 'lobby_sync',
+            payload: { 
+                players: players.current.map(p => ({ ...p, conn: p.conn ? true : false })), 
+                playsetId: playsetRef.current?.id, 
+                roundConfig: roundConfigRef.current, 
+                selectedRoundTabValue: selectedRoundTabRef.current?.value || ROUND_TABS[0]?.value 
             }
-        }
+        })
     }
 
     function redirectAllClients(to) {
-        for (let element of players.current) {
-            if (element.conn) {
-                element.conn.send({ intent: "redirect", payload: { to } })
-            }
-        }
+        channel.current?.send({
+            type: 'broadcast',
+            event: 'redirect',
+            payload: { to }
+        })
     }
 
 
@@ -572,14 +563,14 @@ function HostLobby({ me, code }) {
 
         if (arePlayersOffline) {
             setPrompt({
-                title: "Some players are offline!",
-                text: "They can reconnect by joining the room after you started.",
+                title: t("offline_players"),
+                text: t("offline_desc"),
                 onApprove: () => startIt()
             })
         } else if (wrongPlayerNumber) {
             setPrompt({
-                title: "Insufficient player count!",
-                text: "Your player count doesn't match the playset. This can cause errors.",
+                title: t("insufficient_players"),
+                text: t("insufficient_desc"),
                 onApprove: () => startIt()
             })
         } else startIt();
@@ -590,7 +581,7 @@ function HostLobby({ me, code }) {
         async function startIt() {
             setPrompt(null);
 
-            localStorage.setItem(`game-${code}`, JSON.stringify({ rounds: roundConfig, playsetId: playset.id, players: players.current.map(p => ({ ...p, conn: undefined, ready: undefined })), playWithBury: ((playWithBury || playset?.force_bury) && !playset.no_bury), created_at: moment().format("x"), color_reveal: players?.current?.length > 10 }));
+            localStorage.setItem(`game-${code}`, JSON.stringify({ rounds: roundConfig, playsetId: playset.id, players: players.current.map(p => ({ ...p, conn: undefined, ready: undefined })), playWithBury: ((playWithBury || playset?.force_bury) && !playset.no_bury), created_at: dayjs().valueOf(), color_reveal: players?.current?.length > 10 }));
 
             const player_ids = players?.current?.filter(p => p.userId)?.map(p => p.userId) || [];
 
@@ -613,9 +604,8 @@ function HostLobby({ me, code }) {
             redirectAllClients("/game/" + code)
 
             setTimeout(() => {
-                if (peer) peer.destroy();
+                channel.current?.unsubscribe();
                 setPrompt(null);
-
                 redirect("/game/" + code, { replace: true })
             }, 200)
         }
@@ -627,8 +617,8 @@ function HostLobby({ me, code }) {
     function promptStartGame() {
         if (arePlayersOffline || wrongPlayerNumber) return startGame();
         setPrompt({
-            title: "Are you sure?",
-            text: "DevMode: Check again if player count and playset match and if everyone is online",
+            title: t("are_you_sure"),
+            text: t("dev_mode_desc"),
             onApprove: () => startGame()
         })
     }
@@ -636,7 +626,8 @@ function HostLobby({ me, code }) {
 
     function closeRoom() {
         redirectAllClients("/")
-
+        localStorage.removeItem(`game-${code}`);
+        channel.current?.unsubscribe();
         redirect("/", { replace: true })
     }
 
@@ -705,25 +696,26 @@ function HostLobby({ me, code }) {
                 {playerState.length < 6 ?
                     <div className="text-error text-sm font-semibold flex items-center gap-2 -my-1">
                         <BiError />
-                        <h4>Need at least 6 players</h4>
+                        <h4>{t("need_players")}</h4>
                     </div>
                     : startCondition ?
                         <></>
                         :
                         <div className="text-error text-sm font-semibold flex items-center gap-2 -my-1">
                             <BiError />
-                            <h4>Everyone needs to be ready</h4>
+                            <h4>{t("everyone_ready")}</h4>
                         </div>
 
                 }
 
 
-                <button onClick={(devMode ? promptStartGame : startGame)} className={'w-full btn  text-title' + (startCondition ? " btn-primary  " : " btn-disabled ")} >Start game</button>
-                <button className='link font-bold clickable' onClick={() => closeRoom()}>Close game</button>
+                <button onClick={(devMode ? promptStartGame : startGame)} className={'w-full btn  text-title' + (startCondition ? " btn-primary  " : " btn-disabled ")} >{t("start_game")}</button>
+                <button className='link font-bold clickable' onClick={() => closeRoom()}>{t("close_game")}</button>
 
             </div>
             <div className=' w-full max-w-2xl p-4 py-2 flex flex-col items-start'>
-                <h1 className='font-extrabold text-lg uppercase flex items-center gap-2'>Selected Playset <Info tooltip="Playsets are predetermined decks of cards, that will be distributed among players. They often change the feel of the entire game, so choose wisely." /></h1>
+                <h1 className='font-extrabold text-lg uppercase flex items-center gap-2'>{t("selected_playset")} <Info tooltip={t("playset_info")} /></h1>
+                <p className="text-xs text-neutral-content/60 mb-1">💡 {t("click_cards_to_see_info")}</p>
                 {wrongPlayerNumber && <WrongPlayerNumberPlayset />}
                 <PlaysetDisplay autoFetchInteractions forceOpen selected onClick={() => showAllPlaysets()} playset={playset} />
                 <DescriptionBox description={playset?.description} />
@@ -731,18 +723,18 @@ function HostLobby({ me, code }) {
                 <ToggleButton full checked={(playWithBury) && !playset?.no_bury} onChange={a => setPlayWithBury(bury => !bury)} recommended={recommendBury} disabled={playset?.no_bury || playset?.force_bury}>
                     <div className="flex items-center gap-1">
 
-                        <h1 className={"font-bold text uppercase "}>Play with Card Burying </h1>
-                        <Info tooltip="(Rulebook page 12)" />
+                        <h1 className={"font-bold text uppercase "}>{t("play_with_bury")} </h1>
+                        <Info tooltip={t("rulebook_p12")} />
                     </div>
                 </ToggleButton>
                 {/* <PlayWithBuryToggle recommendBury={recommendBury} bury={(playWithBury) && !playset?.no_bury} onChange={bury => setPlayWithBury(bury)} disabled={playset?.no_bury || playset?.force_bury} /> */}
             </div>
 
             <div className=' w-full max-w-2xl p-4 py-2 flex flex-col items-start'>
-                <h1 className='font-extrabold text-lg uppercase flex items-center gap-2'>ROUND OPTIONS<Info tooltip="Customize round times (advanced)" /></h1>
+                <h1 className='font-extrabold text-lg uppercase flex items-center gap-2'>{t("round_options")}<Info tooltip={t("round_options_info")} /></h1>
                 <div className=' flex items-center justify-center overflow-x-scroll scrollbar-hide w-full gap-2 mb-2 '>
                     {ROUND_TABS.map(tab => (
-                        <SelectTab selected={selectedRoundTab?.value === tab?.value} onClick={() => onRoundTabClick(tab)} {...tab}>{tab?.name}</SelectTab>
+                        <SelectTab key={tab.value} selected={selectedRoundTab?.value === tab?.value} onClick={() => onRoundTabClick(tab)} {...tab}>{t(tab?.key)}</SelectTab>
                     ))}
 
                 </div>
@@ -852,11 +844,12 @@ function EmptyPlayerRow({ }) { // amHost is when the person looking at the scree
 
 
 function LobbyFooter() {
+    const { t } = useTranslation();
     return (
         <>
             <div className='w-full max-w-2xl p-4 pb-4'>
-                <h1 className='text-lg font-extrabold'>
-                    CONTROLS:
+                <h1 className='text-lg font-extrabold uppercase'>
+                    {t("controls_title")}
                 </h1>
                 <div className='border-neutral border-2 text-base-content p-3 rounded-lg'>
                     <Controls />
@@ -864,11 +857,10 @@ function LobbyFooter() {
                 </div>
             </div>
             <div className='w-full max-w-2xl p-4 pb-32'>
-                <h1 className='text-lg font-extrabold'>
-                    SIGNALING LEADERSHIP:
+                <h1 className='text-lg font-extrabold uppercase'>
+                    {t("signaling_leadership")}
                 </h1>
-                <div className='border-neutral border-2 text-base-content p-3 rounded-lg bold-child-error'>
-                    You might have noticed: <br /><b>Leader cards are missing!</b><br />Any appointed leader should now <b>carry an object</b> of your choice (like a hat or cooking spoon) <b>to signal their leadership.</b><br />Any instruction the leader cards usually display, will be shown on your screen.
+                <div className='border-neutral border-2 text-base-content p-3 rounded-lg bold-child-error' dangerouslySetInnerHTML={{ __html: t("leader_missing_notice") }}>
                 </div>
             </div>
         </>

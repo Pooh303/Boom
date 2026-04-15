@@ -87,7 +87,7 @@ async function fetchAndCachePlayset(id, user_id) {
     .from("all_playsets_view")
     .select(`*`)
     .eq("id", id)
-    .single()
+    .maybeSingle()
     .limit(1)
 
   //   console.log(error, playsetData);
