@@ -1,31 +1,31 @@
 [
-    {
-        "name": "Team Garden",
-        "name_th": "ทีมการ์เด้น (Team Garden)",
-        "id": "ga000",
-        "description": "KEEP THE PRESIDENT AWAY FROM THE BOMBER",
-        "description_th": "ปกป้องประธานาธิบดีให้อยู่ห่างจากมือระเบิด",
-        "links": [],
-        "src": "",
-        "info": "You are on the Blue Team.\nYou win if the President does not gain the \"dead\" condition.\r\n\r\nNote: Any character card that has the star icon on it is considered to be on the Blue Team (except spies).",
-        "info_th": "คุณอยู่ทีมสีฟ้า\nคุณจะชนะหากประธานาธิบดีไม่ได้รับสถานะ \"เสียชีวิต\"\n\nหมายเหตุ: การ์ดตัวละครใดๆ ที่มีไอคอนรูปดาวถือว่าอยู่ทีมสีฟ้า (ยกเว้นสายลับ)",
-        "tags": "v3 official",
-        "color_name": "garden",
-        "difficulty": 1
-    },
-    {
-        "name": "Gardener",
-        "name_th": "คนสวน",
-        "id": "ga001",
-        "description": "Avoid the Bomber",
-        "description_th": "หลีกหนีให้ห่างจากมือระเบิด",
-        "primary": true,
-        "links": [],
-        "src": "",
-        "info": "You are a primary character. Team Garden wins if you do not gain the \"dead\" condition.",
-        "info_th": "คุณคือตัวละครหลัก ทีมการ์เด้นจะชนะหากคุณรอดและไม่ติดสถานะ \"เสียชีวิต\"",
-        "tags": "v3 official primary",
-        "color_name": "garden",
-        "difficulty": 8
-    }
+  {
+    "name": "Team Garden",
+    "name_th": "ทีมการ์เด้น (Team Garden)",
+    "id": "ga000",
+    "description": "KEEP THE PRESIDENT AWAY FROM THE BOMBER",
+    "description_th": "ปกป้องประธานาธิบดีให้อยู่ห่างจากมือระเบิด",
+    "links": [],
+    "src": "",
+    "info": "You are on the Blue Team.\nYou win if the President does not gain the \"dead\" condition.\r\n\r\nNote: Any character card that has the star icon on it is considered to be on the Blue Team (except spies).",
+    "info_th": "คุณอยู่ทีมสีฟ้า\nคุณจะชนะหากประธานาธิบดีไม่ได้รับสถานะ \"เสียชีวิต\"\n\nหมายเหตุ: การ์ดตัวละครใดๆ ที่มีไอคอนรูปดาวถือว่าอยู่ทีมสีฟ้า (ยกเว้นสายลับ)",
+    "tags": "v3 official",
+    "color_name": "garden",
+    "difficulty": 1
+  },
+  {
+    "name": "Gardener",
+    "name_th": "คนสวน",
+    "id": "ga001",
+    "description": "Avoid the Bomber",
+    "description_th": "หลีกหนีให้ห่างจากมือระเบิด",
+    "primary": true,
+    "links": [],
+    "src": "",
+    "info": "You are a primary character. Team Garden wins if you do not gain the \"dead\" condition.",
+    "info_th": "คุณคือตัวละครหลัก ทีมการ์เด้นจะชนะหากคุณรอดและไม่ติดสถานะ \"เสียชีวิต\"",
+    "tags": "v3 official primary",
+    "color_name": "garden",
+    "difficulty": 8
+  }
 ]

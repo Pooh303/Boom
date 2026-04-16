@@ -1,79 +1,172 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from "react";
 
-import { FiLink } from "react-icons/fi"
-import { CardFront } from '../Card';
-import { PageContext } from '../PageContextProvider';
-import { useTranslation } from '../../config/i18n';
+import { FiLink } from "react-icons/fi";
+import { IoClose } from "react-icons/io5";
+import { CardFront } from "../Card";
+import { PageContext } from "../PageContextProvider";
+import { useTranslation } from "../../config/i18n";
 
+import { getLinkedCards } from "../../helpers/cards";
+import { WhiteDifficultyPill } from "../Pills";
 
-import { getLinkedCards } from '../../helpers/cards';
-import { WhiteDifficultyPill } from '../Pills';
+function CardInfoMenu({
+  card,
+  color,
+  onCancel,
+  onSelect,
+  hideLinkedCards = false,
+  useIBMFont = false,
+}) {
+  const [linkedCards, setLinkedCards] = useState(getLinkedCards(card));
 
-function CardInfoMenu({ card, color, onCancel, onSelect, hideLinkedCards = false, useIBMFont = false }) {
+  const { setMenu, setMenu2, devMode } = useContext(PageContext);
+  const { language, t } = useTranslation();
 
-    const [linkedCards, setLinkedCards] = useState(getLinkedCards(card));
+  const cardName =
+    language === "th" && card?.name_th ? card.name_th : card?.name;
+  const cardDesc =
+    language === "th" && card?.description_th
+      ? card.description_th
+      : card?.description;
+  const cardInfo =
+    language === "th" && card?.info_th ? card.info_th : card?.info;
 
-    const { setMenu, devMode } = useContext(PageContext);
-    const { language, t } = useTranslation();
+  useEffect(() => {
+    setLinkedCards(getLinkedCards(card));
+  }, [card]);
 
-    const cardName = language === 'th' && card?.name_th ? card.name_th : card?.name;
-    const cardDesc = language === 'th' && card?.description_th ? card.description_th : card?.description;
-    const cardInfo = language === 'th' && card?.info_th ? card.info_th : card?.info;
-
-
-    useEffect(() => {
-        setLinkedCards(getLinkedCards(card))
-    }, [card])
-
-
-
-
-
-    return (
-        <div className='flex justify-center items-center w-full h-full' onClick={() => setMenu(null)}>
-            <div  onClick={(e) => e.stopPropagation()} className='w-fit h-full flex items-center justify-center flex-col'>
-                <div style={{ backgroundColor: color.secondary, color: color.text }} className='w-full max-w-[23rem] h-full max-h-[22rem] rounded-2xl flex flex-col items-center overflow-hidden bg-base-100 transition-all p-4 gap-4'>
-                    <div className='h-24 flex justify-start items-center w-full relative'>
-                        <div style={{ backgroundColor: color.primary }} className='w-[3.5rem] h-24 overflow-hidden flex flex-col-reverse items-center justify-start rounded-lg'>
-                            {card?.src && card.src !== "" && <img src={`/cards${card.src}`} alt="" className="w-full " />}
-
-                        </div>
-                        <div className='grow h-full flex flex-col justify-center items-start p-3'>
-                            <h1 className={`text-title text-2xl font-bold ${useIBMFont ? 'ibm-font' : ''}`}>
-                                {cardName}
-                            </h1>
-                            <div className={`-mt-1 text-xs uppercase ${useIBMFont ? 'ibm-font' : ''}`}>
-                                {cardDesc}
-                            </div>
-
-                        </div>
-                        {devMode && <div style={{ color: color.primary }} className='absolute top-1 right-2 text-xs'>{card.id.toUpperCase()}</div>}
-                    </div>
-                    <div className='flex items-center justify-start w-full -my-2'>
-                        <WhiteDifficultyPill key={card?.id} difficulty={card?.difficulty} />
-
-                    </div>
-                    <div className={`h-full w-full p-4 pb-2.5 text-lg flex flex-col overflow-y-scroll scrollbar-hide bg-white text-black rounded-lg ${useIBMFont ? 'ibm-font' : ''} ${language === 'th' ? 'leading-7' : 'leading-5'}`}>
-                        {cardInfo?.split("\n").map((t, i) => <div key={i}><p key={i}>{t}</p><div className='my-2 mb-0' /></div>)}
-                    </div>
-                    {card?.credit?.link && <a target="_blank" href={card?.credit?.link} className='text-xs underline -my-3'>
-                        {card?.credit?.text || "Image credit"}
-                    </a>}
-                </div>
-                {!hideLinkedCards && linkedCards.length > 0 && <div className='w-full max-w-[23rem] m-12 flex items-center justify-start gap-4 relative'>
-                    <div className='absolute flex justify-start items-center'>
-                        <div name="linked" className='rounded-full h-12 w-12 bg-base-100 m-4 flex justify-center items-center'><FiLink color={color.primary} size={24} /></div>
-                        {linkedCards.map(c =>
-                            (c ? <div key={c.id} onClick={() => setMenu(<CardInfoMenu card={c} color={c.color} onSelect={onSelect} />)} className='card relative scale-[20%] -m-24'><CardFront card={c} color={c?.color} /></div> : "")
-                        )}
-                    </div>
-                </div>}
-                {onSelect && <div className='w-full flex items-center justify-center'>
-                    <button onClick={() => onSelect(card)} className='btn btn-success btn-wide text-title mt-2 text-white'>{t("select")}</button>
-                </div>}
+  return (
+    <div
+      className="flex justify-center items-center w-full h-full"
+      onClick={() => {
+        if (onCancel) onCancel();
+        else {
+          setMenu(null);
+          setMenu2(null);
+        }
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-fit h-full flex items-center justify-center flex-col relative"
+      >
+        <div
+          style={{ backgroundColor: color.secondary, color: color.text }}
+          className="w-full max-w-92 h-full max-h-88 rounded-2xl flex flex-col items-center overflow-hidden bg-base-100 transition-all p-4 gap-4 relative"
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onCancel) onCancel();
+              else {
+                setMenu(null);
+                setMenu2(null);
+              }
+            }}
+            className="absolute top-3 right-3 p-1 hover:bg-black/10 rounded-full transition-all z-50"
+          >
+            <IoClose size={24} />
+          </button>
+          <div className="h-24 flex justify-start items-center w-full relative">
+            <div
+              style={{ backgroundColor: color.primary }}
+              className="w-14 h-24 overflow-hidden flex flex-col-reverse items-center justify-start rounded-lg"
+            >
+              {card?.src && card.src !== "" && (
+                <img src={`/cards${card.src}`} alt="" className="w-full " />
+              )}
             </div>
+            <div className="grow h-full flex flex-col justify-center items-start p-3 pr-8">
+              <h1
+                className={`text-title text-2xl font-bold ${useIBMFont ? "ibm-font" : ""}`}
+              >
+                {cardName}
+              </h1>
+              <div
+                className={`-mt-1 text-xs uppercase ${useIBMFont ? "ibm-font" : ""}`}
+              >
+                {cardDesc}
+              </div>
+            </div>
+            {devMode && (
+              <div
+                style={{ color: color.primary }}
+                className="absolute top-10 right-2 text-[10px] opacity-50"
+              >
+                {card.id.toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-start w-full -my-2">
+            <WhiteDifficultyPill key={card?.id} difficulty={card?.difficulty} />
+          </div>
+          <div
+            className={`h-full w-full p-4 pb-2.5 text-lg flex flex-col overflow-y-scroll scrollbar-hide bg-white text-black rounded-lg ${useIBMFont ? "ibm-font" : ""} ${language === "th" ? "leading-7" : "leading-5"}`}
+          >
+            {cardInfo?.split("\n").map((t, i) => (
+              <div key={i}>
+                <p key={i}>{t}</p>
+                <div className="my-2 mb-0" />
+              </div>
+            ))}
+          </div>
+          {card?.credit?.link && (
+            <a
+              target="_blank"
+              href={card?.credit?.link}
+              className="text-xs underline -my-3"
+            >
+              {card?.credit?.text || "Image credit"}
+            </a>
+          )}
         </div>
-    );
+        {!hideLinkedCards && linkedCards.length > 0 && (
+          <div className="w-full max-w-92 m-12 flex items-center justify-start gap-4 relative">
+            <div className="absolute flex justify-start items-center">
+              <div
+                name="linked"
+                className="rounded-full h-12 w-12 bg-base-100 m-4 flex justify-center items-center"
+              >
+                <FiLink color={color.primary} size={24} />
+              </div>
+              {linkedCards.map((c) =>
+                c ? (
+                  <div
+                    key={c.id}
+                    onClick={() =>
+                      setMenu2(
+                        <CardInfoMenu
+                          card={c}
+                          color={c.color}
+                          onSelect={onSelect}
+                          onCancel={() => setMenu2(null)}
+                        />,
+                      )
+                    }
+                    className="card relative scale-[20%] -m-24"
+                  >
+                    <CardFront card={c} color={c?.color} />
+                  </div>
+                ) : (
+                  ""
+                ),
+              )}
+            </div>
+          </div>
+        )}
+        {onSelect && (
+          <div className="w-full flex items-center justify-center">
+            <button
+              onClick={() => onSelect(card)}
+              className="btn btn-success btn-wide text-title mt-2 text-white"
+            >
+              {t("select")}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default CardInfoMenu;

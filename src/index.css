@@ -1,6 +1,69 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  color-scheme: "light";
+  --color-primary: #fc021b;
+  --color-primary-content: #ffffff;
+  --color-secondary: #0019fd;
+  --color-secondary-content: #ffffff;
+  --color-accent: #4a4a4a;
+  --color-accent-content: #ffffff;
+  --color-accent-100: #858585;
+  --color-neutral: #000000;
+  --color-neutral-content: #ffffff;
+  --color-base-100: #ffffff;
+  --color-base-content: #000000;
+  --color-info: #72c4ff;
+  --color-success: #28df20;
+  --color-warning: #fbbd23;
+  --color-error: #fc021b;
+}
+
+@plugin "daisyui/theme" {
+  name: "christmas";
+  color-scheme: "light";
+  --color-primary: #b11e28;
+  --color-primary-content: #ffffff;
+  --color-secondary: #457d23;
+  --color-secondary-content: #ffffff;
+  --color-accent: #512026;
+  --color-accent-content: #ffffff;
+  --color-accent-100: #858585;
+  --color-neutral: #2c1114;
+  --color-neutral-content: #ffffff;
+  --color-base-100: #ffffff;
+  --color-base-content: #000000;
+  --color-info: #72c4ff;
+  --color-success: #28df20;
+  --color-warning: #fbbd23;
+  --color-error: #f87272;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  prefersdark: true;
+  color-scheme: "dark";
+  --color-primary: #fc021b;
+  --color-primary-content: #ffffff;
+  --color-secondary: #0019fd;
+  --color-secondary-content: #ffffff;
+  --color-accent: #e0e0e0;
+  --color-accent-content: #000000;
+  --color-accent-100: #858585;
+  --color-neutral: #ffffff;
+  --color-neutral-content: #000000;
+  --color-base-100: #212121;
+  --color-base-200: #424242;
+  --color-base-300: #616161;
+  --color-base-content: #ffffff;
+  --color-info: #72c4ff;
+  --color-success: #28df20;
+  --color-warning: #fbbd23;
+  --color-error: #f87272;
+}
 
 :root {
   color-scheme: only light;
@@ -24,14 +87,28 @@ html {
 }
 
 body {
-  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
+  font-family:
+    "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
+    sans-serif;
   line-height: 1.5;
 }
 
 .lang-th,
 .lang-th body {
-  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
+  font-family:
+    "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
+    sans-serif;
   line-height: 1.5;
+}
+
+.z-600 {
+  z-index: 600;
+}
+.z-700 {
+  z-index: 700;
+}
+.z-800 {
+  z-index: 800;
 }
 
 /* div {
@@ -43,7 +120,13 @@ body {
 }
 
 .btn {
-  @apply rounded-md transition-all no-animation clickable;
+  @apply rounded-md transition-all;
+}
+
+.btn:active:hover,
+.btn:active:focus {
+  transform: scale(0.95, 0.95);
+  transition: 100ms;
 }
 
 /* .btn:hover {
@@ -63,7 +146,7 @@ body {
   transform: skewX(-10deg);
 }
 
-.btn>* {
+.btn > * {
   transform: skewX(10deg);
 }
 
@@ -71,7 +154,7 @@ body {
   transform: skewX(-10deg);
 }
 
-.skew>* {
+.skew > * {
   transform: skewX(10deg);
 }
 
@@ -83,7 +166,7 @@ body {
   transform: skewX(10deg);
 }
 
-.skew-reverse>* {
+.skew-reverse > * {
   transform: skewX(-10deg);
 }
 
@@ -99,31 +182,39 @@ body {
 }
 
 .text-normal {
-  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
+  font-family:
+    "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
+    sans-serif;
 }
 
 .lang-th .text-normal,
 .ibm-font .text-normal {
-  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
+  font-family:
+    "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
+    sans-serif;
   line-height: 1.5;
 }
 
 .ibm-font,
 .ibm-font * {
-  font-family: "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif !important;
+  font-family:
+    "IBM Plex Sans", "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
+    sans-serif !important;
   text-transform: uppercase !important;
 }
 
 @font-face {
   font-family: "IBM Plex Sans";
-  src: url("/font/IBM_Plex_Sans/static/IBMPlexSans-Regular.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans/static/IBMPlexSans-Regular.ttf")
+    format("truetype");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: "IBM Plex Sans";
-  src: url("/font/IBM_Plex_Sans/static/IBMPlexSans-Medium.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans/static/IBMPlexSans-Medium.ttf")
+    format("truetype");
   font-weight: 500;
   font-style: normal;
 }
@@ -137,56 +228,65 @@ body {
 
 @font-face {
   font-family: "Mythoz";
-  src: local("Mythoz"), url(./fonts/Mythoz.ttf) format("truetype");
+  src:
+    local("Mythoz"),
+    url(./fonts/Mythoz.ttf) format("truetype");
   /* other formats include: 'woff2', 'truetype, 'opentype',
                               'embedded-opentype', and 'svg' */
 }
 
 @font-face {
   font-family: "IBM Plex Sans Thai Looped";
-  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Thin.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Thin.ttf")
+    format("truetype");
   font-weight: 100;
   font-style: normal;
 }
 
 @font-face {
   font-family: "IBM Plex Sans Thai Looped";
-  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-ExtraLight.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-ExtraLight.ttf")
+    format("truetype");
   font-weight: 200;
   font-style: normal;
 }
 
 @font-face {
   font-family: "IBM Plex Sans Thai Looped";
-  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Light.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Light.ttf")
+    format("truetype");
   font-weight: 300;
   font-style: normal;
 }
 
 @font-face {
   font-family: "IBM Plex Sans Thai Looped";
-  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Regular.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Regular.ttf")
+    format("truetype");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: "IBM Plex Sans Thai Looped";
-  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Medium.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Medium.ttf")
+    format("truetype");
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
   font-family: "IBM Plex Sans Thai Looped";
-  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-SemiBold.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-SemiBold.ttf")
+    format("truetype");
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
   font-family: "IBM Plex Sans Thai Looped";
-  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Bold.ttf") format("truetype");
+  src: url("/font/IBM_Plex_Sans_Thai_Looped/IBMPlexSansThaiLooped-Bold.ttf")
+    format("truetype");
   font-weight: 700;
   font-style: normal;
 }
@@ -197,8 +297,8 @@ body {
 
 .lang-th .text-cowboys,
 .ibm-font .text-cowboys {
-  font-family: Mythoz, "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
-    sans-serif;
+  font-family:
+    Mythoz, "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
   line-height: 1.4;
 }
 
@@ -208,21 +308,21 @@ body {
 
 .lang-th .text-title,
 .ibm-font .text-title {
-  font-family: Mythoz, "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica,
-    sans-serif;
+  font-family:
+    Mythoz, "IBM Plex Sans Thai Looped", Inter, Arial, Helvetica, sans-serif;
   line-height: 1.4;
 }
 
 .title-shadow-primary {
-  text-shadow: 5px 5px 0px theme("colors.primary");
+  text-shadow: 5px 5px 0px var(--color-primary);
 }
 
 .title-shadow-secondary {
-  text-shadow: 5px 5px 0px theme("colors.secondary");
+  text-shadow: 5px 5px 0px var(--color-secondary);
 }
 
 .title-shadow-secondary-xs {
-  text-shadow: 2px 2px 0px theme("colors.secondary");
+  text-shadow: 2px 2px 0px var(--color-secondary);
 }
 
 .input {
@@ -271,8 +371,7 @@ body {
 }
 
 .screen-bg {
-  background: radial-gradient(theme("colors.base-100"),
-      rgba(107, 107, 107, 0.6));
+  background: radial-gradient(var(--color-base-100), rgba(107, 107, 107, 0.6));
 }
 
 .screen-bg-blue {
@@ -284,69 +383,91 @@ body {
 }
 
 .logo-gradient-neutral {
-  background: radial-gradient(#000000,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    #000000,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .white-blob-gradient {
-  background: radial-gradient(rgba(255, 255, 255, 0.421),
-      rgba(255, 255, 255, 0),
-      #00000000);
+  background: radial-gradient(
+    rgba(255, 255, 255, 0.421),
+    rgba(255, 255, 255, 0),
+    #00000000
+  );
 }
 
 .circular-gradient-primary {
-  background: radial-gradient(theme("colors.primary"),
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    var(--color-primary),
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .circular-gradient-secondary {
-  background: radial-gradient(theme("colors.secondary"),
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    var(--color-secondary),
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .circular-gradient-success {
-  background: radial-gradient(theme("colors.success"),
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    var(--color-success),
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .circular-gradient-accent {
-  background: radial-gradient(#4a4a4a,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    #4a4a4a,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .circular-gradient-accent2 {
-  background: radial-gradient(#858585,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    #858585,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .circular-gradient-sky {
-  background: radial-gradient(#539cf6,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    #539cf6,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .circular-gradient-wine {
-  background: radial-gradient(#970202,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    #970202,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .circular-gradient-lime {
-  background: radial-gradient(#90f96a,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    #90f96a,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .circular-gradient-green {
-  background: radial-gradient(#358517,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    #358517,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .animate-left-to-right {
@@ -399,15 +520,16 @@ body {
 }
 
 .inner-shadow {
-  box-shadow: inset 0px 0px 15px 0 rgba(0, 0, 0, 0.2),
+  box-shadow:
+    inset 0px 0px 15px 0 rgba(0, 0, 0, 0.2),
     inset -0px -0px 15px 0 rgba(255, 255, 255, 0.3);
 }
 
-.bold-child-error>b {
+.bold-child-error > b {
   @apply text-error;
 }
 
-.bold-child-info>b {
+.bold-child-info > b {
   @apply text-info;
 }
 
@@ -530,12 +652,12 @@ html {
   text-overflow: ellipsis;
 }
 
-
-
 .dev-mode-stripes {
-  background: repeating-linear-gradient(45deg,
-      theme('colors.amber.400'),
-      theme('colors.amber.400') 10px,
-      #000000 10px,
-      #000000 20px);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-amber-400),
+    var(--color-amber-400) 10px,
+    #000000 10px,
+    #000000 20px
+  );
 }

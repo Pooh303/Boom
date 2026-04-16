@@ -1,5 +1,5 @@
-import { useContext } from 'react';
-import { PageContext } from '../components/PageContextProvider';
+import { useContext } from "react";
+import { PageContext } from "../components/PageContextProvider";
 
 const dict = {
   th: {
@@ -16,7 +16,8 @@ const dict = {
     cancel: "ยกเลิก",
     join: "เข้าร่วม",
     create: "สร้าง",
-    disclaimer: "เกมนี้เหมาะสำหรับเล่นรวมกลุ่มกันต่อหน้า โดยใช้มือถือแทนการแจกไพ่",
+    disclaimer:
+      "เกมนี้เหมาะสำหรับเล่นรวมกลุ่มกันต่อหน้า โดยใช้มือถือแทนการแจกไพ่",
     home: "หน้าแรก",
     lobby: "ล็อบบี้",
     players: "ผู้เล่น",
@@ -41,7 +42,7 @@ const dict = {
     need_players: "ต้องมีผู้เล่นอย่างน้อย 6 คน",
     everyone_ready: "ทุกคนต้องกดพร้อมก่อน",
     you_are_the: "คุณได้รับบทบาทเป็น",
-    color_reveal: "เปิิดเผยสีเผ่าพันธุ์",
+    color_reveal: "เปิดเผยสีการ์ด",
     disabled: "ถูกตั้งค่าไม่ให้ใช้งาน",
     more_info: "ข้อมูลเพิ่มเติม",
     select: "เลือก",
@@ -54,11 +55,14 @@ const dict = {
     fourth: "ที่สี่",
     fifth: "ที่ห้า",
     offline_players: "ผู้เล่นบางคนออฟไลน์!",
-    offline_desc: "พวกเขาสามารถเชื่อมต่อใหม่ได้โดยการเข้าร่วมห้องหลังจากที่คุณเริ่มเกมแล้ว",
+    offline_desc:
+      "พวกเขาสามารถเชื่อมต่อใหม่ได้โดยการเข้าร่วมห้องหลังจากที่คุณเริ่มเกมแล้ว",
     insufficient_players: "จำนวนผู้เล่นไม่เพียงพอ!",
-    insufficient_desc: "จำนวนผู้เล่นของคุณไม่ตรงกับเด็คการ์ดที่เลือก ซึ่งอาจทำให้เกิดข้อผิดพลาดได้",
+    insufficient_desc:
+      "จำนวนผู้เล่นของคุณไม่ตรงกับเด็คการ์ดที่เลือก ซึ่งอาจทำให้เกิดข้อผิดพลาดได้",
     are_you_sure: "คุณแน่ใจหรือไม่?",
-    dev_mode_desc: "โหมดนักพัฒนา: ตรวจสอบอีกครั้งว่าจำนวนผู้เล่นและเด็ดการ์ดตรงกัน และทุกคนออนไลน์อยู่",
+    dev_mode_desc:
+      "โหมดนักพัฒนา: ตรวจสอบอีกครั้งว่าจำนวนผู้เล่นและเด็ดการ์ดตรงกัน และทุกคนออนไลน์อยู่",
     go_to: "ไปที่",
     room: "ห้อง",
     waiting: "กำลังรอ...",
@@ -66,28 +70,28 @@ const dict = {
     force_next: "ข้ามไปหน้าถัดไป",
     first_leader: "คุณเป็นหัวหน้าคนแรก",
     reveal: "เปิดเผย",
-    card_revealed: "เปิดเผยการ์ดแล้ว",
-    color_revealed: "เปิดเผยสีแล้ว",
+    card_revealed: "เปิดเผยการ์ด",
+    color_revealed: "เปิดเผยสี",
     last_round: "รอบสุดท้าย",
     boom: "ตู้ม!",
     bomb_exploded: "ระเบิดทำงานแล้ว!",
     winners: "ผู้ชนะ",
-    back_to_lobby: "กลับไปที่ห้องพักรอ",
-    lobby_confirm_text: "นี่จะทำให้ทุกคนกลับไปที่ห้องพักรอ",
+    back_to_lobby: "กลับไปที่หน้าล็อบบี้",
+    lobby_confirm_text: "การกลับไปที่หน้าล็อบบี้จะทำให้เกมจบลง",
     close_game_upper: "ปิดเกม",
     leave_game_upper: "ออกจากเกม",
-    back_to_lobby_upper: "กลับไปที่ห้องพักรอ",
+    back_to_lobby_upper: "กลับไปที่หน้าล็อบบี้",
     wants_to_swap: "ต้องการแลกการ์ด",
     swap_instruction: "แลกเมื่อเกมบอกให้คุณแลกเท่านั้น",
     waiting_for: "กำลังรอ",
     swap_button: "แลกเลย!",
     cancel_request: "ยกเลิกคำขอ",
-    round_over: "จบชื่อรอบ!",
+    round_over: "จบรอบ!",
     leaders_select: "ผู้นำทีม โปรดเลือก...",
     hostages_plural: "ตัวประกัน",
-    parlay: "การเจรจา (Parlay)",
+    parlay: "2. การเจรจา",
     parlay_desc: "ผู้นำทั้งสองฝ่ายพบกันระหว่างห้องโดยไม่มีตัวประกัน",
-    exchange_hostages: "แลกเปลี่ยนตัวประกัน",
+    exchange_hostages: "3. แลกเปลี่ยนตัวประกัน",
     exchange_hostages_desc: "แลกเปลี่ยนตัวประกันในจำนวนที่เท่ากัน",
     ready_up_desc: "กดปุ่มพร้อมเมื่อผู้นำกลับเข้าห้องแล้ว",
     announcements: "ประกาศ",
@@ -101,30 +105,42 @@ const dict = {
     red_team_wins: "ทีมสีแดงชนะ!",
     blue_team_wins: "ทีมสีฟ้าชนะ!",
     buried_card_label: "การ์ดที่ถูกฝังไว้:",
-    playset_info: "เด็คการ์ด (Playsets) คือชุดการ์ดที่ถูกกำหนดไว้ล่วงหน้าซึ่งจะถูกแจกจ่ายให้กับผู้เล่น ซึ่งแต่ละชุดจะเปลี่ยนความรู้สึกในการเล่นเกมไปอย่างสิ้นเชิง ดังนั้นควรเลือกให้ดี",
+    playset_info:
+      "เด็คการ์ด คือชุดการ์ดที่ถูกกำหนดไว้ล่วงหน้าซึ่งจะถูกแจกจ่ายให้กับผู้เล่น ซึ่งแต่ละชุดจะเปลี่ยนความรู้สึกในการเล่นเกมไปอย่างสิ้นเชิง ดังนั้นควรเลือกให้ดี",
     round_options_info: "ปรับแต่งเวลารายรอบ (สำหรับผู้เล่นระดับสูง)",
     rulebook_p12: "(คู่มือกติกา หน้า 12)",
     controls_title: "การควบคุม:",
     signaling_leadership: "สัญลักษณ์แสดงความเป็นผู้นำ:",
-    leader_missing_notice: "คุณอาจสังเกตเห็นว่า: <br /><b>ไม่มีการ์ดผู้นำ (Leader cards)!</b><br />ดังนั้น ผู้นำที่ได้รับการแต่งตั้งควร<b>ถือวัตถุอะไรบางอย่าง</b> (เช่น หมวก หรือ ช้อนไม้) <b>เพื่อเป็นสัญลักษณ์แสดงความเป็นผู้นำ</b><br />ส่วนคำแนะนำต่างๆ ที่ปกติจะอยู่บนการ์ดผู้นำ จะแสดงขึ้นมาบนหน้าจอของคุณแทน",
+    leader_missing_notice:
+      "คุณอาจสังเกตเห็นว่า: <br /><b>ไม่มีการ์ดผู้นำ!</b><br />ดังนั้น ผู้นำที่ได้รับการแต่งตั้งควร<b>ถือวัตถุอะไรบางอย่าง</b> (เช่น หมวก หรือ ช้อนไม้) <b>เพื่อเป็นสัญลักษณ์แสดงความเป็นผู้นำ</b><br />ส่วนคำแนะนำต่างๆ ที่ปกติจะอยู่บนการ์ดผู้นำ จะแสดงขึ้นมาบนหน้าจอของคุณแทน",
     card_reveal_title: "การเปิดการ์ด:",
-    card_reveal_desc: "แตะที่ตัวการ์ดเพื่อเปิดหรือปิดหน้าการ์ด สามารถใช้ในการยื่นให้เพื่อนดู (Card share) ได้ด้วย",
+    card_reveal_desc:
+      "แตะที่ตัวการ์ดเพื่อเปิดหรือปิดหน้าการ์ด สามารถใช้ในการยื่นให้เพื่อนดูได้ด้วย",
     color_reveal_title: "การเปิดสีทีม:",
-    color_reveal_desc: "ปัดการ์ดลงเพื่อเปิดสีทีม (ต้องปิดหน้าการ์ดก่อนถึงจะทำได้)",
-    color_reveal_disabled: "ถูกปิดใช้งานเมื่อผู้เล่นน้อยกว่า 11 คน (หัวหน้าห้องสามารถเปิดเองได้)",
+    color_reveal_desc:
+      "ปัดการ์ดลงเพื่อเปิดสีทีม (ต้องปิดหน้าการ์ดก่อนถึงจะทำได้)",
+    color_reveal_disabled:
+      "ถูกปิดใช้งานเมื่อผู้เล่นน้อยกว่า 11 คน (หัวหน้าห้องสามารถเปิดเองได้)",
     see_all_cards_title: "ดูการ์ดทั้งหมดในเกม:",
-    see_all_cards_desc: "คลิกที่ไอคอนรูปการ์ดที่มุมขวาบนของจอ เพื่อดูการ์ดทั้งหมดที่เพื่อนๆ ของคุณได้รับ",
+    see_all_cards_desc:
+      "คลิกที่ไอคอนรูปการ์ดที่มุมขวาบนของจอ เพื่อดูการ์ดทั้งหมดที่เพื่อนๆ ของคุณได้รับ",
     swap_cards_title: "การแลกการ์ด:",
-    swap_cards_desc: "เปิดหน้าการ์ดแล้วปัดขึ้น จากนั้นเลือกผู้เล่นที่ต้องการแลกการ์ดด้วยและรอการตอบรับ",
+    swap_cards_desc:
+      "เปิดหน้าการ์ดแล้วปัดขึ้น จากนั้นเลือกผู้เล่นที่ต้องการแลกการ์ดด้วยและรอการตอบรับ",
     timer_menu_title: "เมนูเวลา:",
-    timer_menu_desc: "คลิกที่ตัวเลขเวลาเพื่อเปิดเมนูดูรอบการเล่นและตั้งค่าอื่นๆ",
-    host_options: "หัวหน้าห้อง (Host) จะมีตัวเลือกเพิ่มเติมดังนี้:",
+    timer_menu_desc:
+      "คลิกที่ตัวเลขเวลาเพื่อเปิดเมนูดูรอบการเล่นและตั้งค่าอื่นๆ",
+    host_options: "หัวหน้าห้อง จะมีตัวเลือกเพิ่มเติมดังนี้:",
     pause_resume: "หยุด / เริ่มเกมต่อ",
-    end_round_early: "จบชื่อรอบก่อนกำหนด",
+    end_round_early: "จบรอบก่อนกำหนด",
     end_game_early: "จบเกมก่อนกำหนด",
-    remote_party_mode: "โหมดปาร์ตี้ทางไกล (Remote Party Mode)",
+    remote_party_mode: "โหมดปาร์ตี้ทางไกล",
     do_not_use_in_person: "ห้ามใช้เมื่อเล่นด้วยกันต่อหน้า!",
-    remote_mode_desc: "หากเปิดโหมดนี้จะสามารถแชร์การ์ดและสีผ่านระบบออนไลน์ได้ เหมาะสำหรับการเล่นผ่าน Discord หรือ Zoom",
+    remote_mode_desc:
+      "หากเปิดโหมดนี้จะสามารถแชร์การ์ดและสีผ่านระบบออนไลน์ได้ เหมาะสำหรับการเล่นผ่าน Discord หรือ Zoom",
+    allow_swapping: "อนุญาตให้ส่งการ์ด",
+    allow_swapping_desc:
+      "อนุญาตให้ผู้เล่นส่งหรือสลับการ์ดกันในระหว่างที่มีสัญญานอินเทอร์เน็ต",
     vote_leader: "โหวตผู้นำ",
     hostage_exchange: "เลือกตัวประกัน",
     waiting_other_room: "รอหัวหน้าอีกห้อง...",
@@ -151,7 +167,28 @@ const dict = {
     leader_result: "ผลโหวต",
     copy_link: "คัดลอกลิงก์",
     link_copied: "คัดลอกลิงก์แล้ว!",
-    click_cards_to_see_info: "คลิกที่การ์ดเพื่อดูความสามารถ"
+    click_cards_to_see_info: "คลิกที่การ์ดเพื่อดูความสามารถ",
+    workbench: "ห้องทดลอง",
+    editing: "กำลังแก้ไข",
+    remixing: "กำลังปรับแต่ง",
+    select_primary: "เลือกการ์ดหลัก",
+    general_cards: "การ์ดทั่วไป",
+    odd_card: "การ์ดเศษ",
+    default_cards: "การ์ดพื้นฐาน",
+    name_placeholder: "ชื่อเด็ค *",
+    description_placeholder: "คำอธิบายรายละเอียด...",
+    distribute_in_order: "แจกการ์ดตามลำดับ",
+    player_range: "ช่วงจำนวนผู้เล่น:",
+    burying: "การ์ดคว่ำ:",
+    auto: "อัตโนมัติ",
+    always_bury: "บังคับคว่ำเสมอ",
+    never_bury: "ไม่ใช้การ์ดคว่ำ",
+    save_remix: "บันทึกการปรับแต่ง!",
+    save_playset: "บันทึกเด็ค!",
+    simulate_playset: "จำลองเด็คการ์ด",
+    cards_in_game: "จำนวนการ์ดในเกม:",
+    buried_card_workbench: "การ์ดถูกคว่ำ:",
+    sober_card: "การ์ดคนปกติ:",
   },
   en: {
     play: "Play",
@@ -207,9 +244,11 @@ const dict = {
     offline_players: "Some players are offline!",
     offline_desc: "They can reconnect by joining the room after you started.",
     insufficient_players: "Insufficient player count!",
-    insufficient_desc: "Your player count doesn't match the playset. This can cause errors.",
+    insufficient_desc:
+      "Your player count doesn't match the playset. This can cause errors.",
     are_you_sure: "Are you sure?",
-    dev_mode_desc: "DevMode: Check again if player count and playset match and if everyone is online",
+    dev_mode_desc:
+      "DevMode: Check again if player count and playset match and if everyone is online",
     go_to: "GO TO",
     room: "ROOM",
     waiting: "Waiting...",
@@ -253,30 +292,42 @@ const dict = {
     red_team_wins: "Red Team Wins!",
     blue_team_wins: "Blue Team Wins!",
     buried_card_label: "BURIED CARD:",
-    playset_info: "Playsets are predetermined decks of cards, that will be distributed among players. They often change the feel of the entire game, so choose wisely.",
+    playset_info:
+      "Playsets are predetermined decks of cards, that will be distributed among players. They often change the feel of the entire game, so choose wisely.",
     round_options_info: "Customize round times (advanced)",
     rulebook_p12: "(Rulebook page 12)",
     controls_title: "CONTROLS:",
     signaling_leadership: "SIGNALING LEADERSHIP:",
-    leader_missing_notice: "You might have noticed: <br /><b>Leader cards are missing!</b><br />Any appointed leader should now <b>carry an object</b> of your choice (like a hat or cooking spoon) <b>to signal their leadership.</b><br />Any instruction the leader cards usually display, will be shown on your screen.",
+    leader_missing_notice:
+      "You might have noticed: <br /><b>Leader cards are missing!</b><br />Any appointed leader should now <b>carry an object</b> of your choice (like a hat or cooking spoon) <b>to signal their leadership.</b><br />Any instruction the leader cards usually display, will be shown on your screen.",
     card_reveal_title: "Card reveal:",
-    card_reveal_desc: "To reveal or hide your card, tap it. This can be used to card share aswell.",
+    card_reveal_desc:
+      "To reveal or hide your card, tap it. This can be used to card share aswell.",
     color_reveal_title: "Color reveal:",
-    color_reveal_desc: "To reveal your color simply swipe down on your card. (Card face must be closed)",
-    color_reveal_disabled: "Disabled when less than 11 players. (Can be enabled by host)",
+    color_reveal_desc:
+      "To reveal your color simply swipe down on your card. (Card face must be closed)",
+    color_reveal_disabled:
+      "Disabled when less than 11 players. (Can be enabled by host)",
     see_all_cards_title: "See all cards in game:",
-    see_all_cards_desc: "Click the cards icon in the upper right corner of your screen. Now you can see all cards that are distributed among your friends.",
+    see_all_cards_desc:
+      "Click the cards icon in the upper right corner of your screen. Now you can see all cards that are distributed among your friends.",
     swap_cards_title: "Swap cards:",
-    swap_cards_desc: "Open your card face and swipe up. Select a player with whom you want to swap cards and wait for them to accept the request.",
+    swap_cards_desc:
+      "Open your card face and swipe up. Select a player with whom you want to swap cards and wait for them to accept the request.",
     timer_menu_title: "Timer menu:",
-    timer_menu_desc: "Click the timer to open the menu. You can now see all rounds and settings.",
+    timer_menu_desc:
+      "Click the timer to open the menu. You can now see all rounds and settings.",
     host_options: "Host has the following options:",
     pause_resume: "Pause/Resume game",
     end_round_early: "End the round prematurely",
     end_game_early: "End the game prematurely",
     remote_party_mode: "Remote Party Mode (Host)",
     do_not_use_in_person: "DO NOT USE WHEN PLAYING IN PERSON",
-    remote_mode_desc: "Enable this and you can virtually and remotely card and color share. This is for lobbies that are playing online rather than in person. (via Discord, Zoom, ...)",
+    remote_mode_desc:
+      "Enable this and you can virtually and remotely card and color share. This is for lobbies that are playing online rather than in person. (via Discord, Zoom, ...)",
+    allow_swapping: "Allow Card Swapping",
+    allow_swapping_desc:
+      "Allows players to send or swap cards during the game.",
     vote_leader: "Vote Leader",
     vote_for_leader: "Vote for room leader",
     vote_submitted: "Voted!",
@@ -304,17 +355,38 @@ const dict = {
     confirm_hostages: "Confirm Hostages",
     select_more: "Select more...",
     please_wait: "Please wait...",
-    candidates: "Candidates"
-  }
+    candidates: "Candidates",
+    workbench: "Workbench",
+    editing: "Editing",
+    remixing: "Remixing",
+    select_primary: "Select primary",
+    general_cards: "General cards",
+    odd_card: "Odd card",
+    default_cards: "Default cards",
+    name_placeholder: "Name *",
+    description_placeholder: "Description",
+    distribute_in_order: "Distribute cards in order",
+    player_range: "Player range:",
+    burying: "Burying:",
+    auto: "Auto",
+    always_bury: "Always bury",
+    never_bury: "Never bury",
+    save_remix: "Save remix!",
+    save_playset: "Save playset!",
+    simulate_playset: "Simulate Playset",
+    cards_in_game: "Cards in game:",
+    buried_card_workbench: "Buried card:",
+    sober_card: "Sober card:",
+  },
 };
 
 export function useTranslation() {
   const context = useContext(PageContext);
-  const language = context?.language || 'th';
-  
+  const language = context?.language || "th";
+
   const t = (key) => {
-    const langDict = dict[language] || dict['th'];
-    return langDict[key] || dict['en'][key] || key;
+    const langDict = dict[language] || dict["th"];
+    return langDict[key] || dict["en"][key] || key;
   };
 
   return { t, language };

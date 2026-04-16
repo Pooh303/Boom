@@ -1,22 +1,22 @@
 export function findIndexCombinations(arr, targetSum) {
-    const result = [];
+  const result = [];
 
-    function backtrack(currentIndex, currentSum, currentCombination) {
-        if (currentSum === targetSum) {
-            result.push([...currentCombination]);
-            return;
-        }
-
-        for (let i = currentIndex; i < arr.length; i++) {
-            if (currentSum + arr[i] <= targetSum) {
-                currentCombination.push(i);
-                backtrack(i + 1, currentSum + arr[i], currentCombination);
-                currentCombination.pop();
-            }
-        }
+  function backtrack(currentIndex, currentSum, currentCombination) {
+    if (currentSum === targetSum) {
+      result.push([...currentCombination]);
+      return;
     }
 
-    backtrack(0, 0, []);
+    for (let i = currentIndex; i < arr.length; i++) {
+      if (currentSum + arr[i] <= targetSum) {
+        currentCombination.push(i);
+        backtrack(i + 1, currentSum + arr[i], currentCombination);
+        currentCombination.pop();
+      }
+    }
+  }
 
-    return result;
+  backtrack(0, 0, []);
+
+  return result;
 }

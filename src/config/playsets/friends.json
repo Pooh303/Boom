@@ -1,243 +1,178 @@
 [
-    {
-        "name": "My first hot potato",
-        "id": "f0001",
-        "emoji": "🥔",
-        "players": "6-17",
-        "cards": [
-            "b001",
-            "r001",
-            "g009"
-        ],
-        "odd_card": "g006",
-        "shuffle": true,
-        "no_bury": false
-    },
-    {
-        "name": "Love or hate or travel",
-        "id": "f0002",
-        "emoji": "🖤",
-        "players": "8-23",
-        "cards": [
-            "b001",
-            "r001",
-            "b011",
-            "r011",
-            "g023",
-            "g011",
-            "g002",
-            "g017"
-        ],
-        "odd_card": "g027",
-        "shuffle": true,
-        "no_bury": false
-    },
-    {
-        "name": "I'm not green, trust me",
-        "id": "f0003",
-        "emoji": "🌳",
-        "players": "9-24",
-        "cards": [
-            "b001",
-            "r001",
-            "b014",
-            "r014",
-            "e003",
-            "g024",
-            "g026",
-            "g007",
-            "g006"
-        ],
-        "odd_card": "g009",
-        "shuffle": true,
-        "no_bury": true
-    },
-    { 
-        "name": "The cover up 2.0",
-        "id": "f0004",
-        "players": "14-31",
-        "emoji": "🧱",
-        "cards": [
-            "b001",
-            "r001",
-            "b014",
-            "r014",
-            "b034",
-            "r034",
-            "b016",
-            "r016",
-            "b011",
-            "r011",
-            "b019",
-            "r019",
-            "b030",
-            "r030",
-            "b032",
-            "r032",
-            "b006",
-            "r006"
-            
-        ],
-        "odd_card": "g027",
-        "shuffle": true,
-        "no_bury": false
-    },
-    { 
-        "name": "Sharing is caring",
-        "id": "f0005",
-        "players": "8-23",
-        "emoji": "🧨",
-        "cards": [
-            "b001",
-            "r001",
-            "b014",
-            "r014",
-            "b034",
-            "r034",
-            "b016",
-            "r016"
-            
-        ],
-        "odd_card": "g013",
-        "shuffle": true,
-        "no_bury": false
-    },
-    { 
-        "name": "Hostage Mayhem",
-        "id": "f0006",
-        "players": "14-31",
-        "emoji": "🔀",
-        "cards": [
-            "b001",
-            "r001",
-            "b034",
-            "r034",
-            "b011",
-            "r011",
-            "b019",
-            "r019",
-            "b030",
-            "r030",
-            "b006",
-            "r006",
-            "b028",
-            "r028",
-            "b003",
-            "r003",
-            "b033",
-            "r033"
-            
-        ],
-        "odd_card": "g027",
-        "shuffle": true,
-        "no_bury": false
-    },
-    { 
-        "name": "I'm on your team.",
-        "id": "f0007",
-        "players": "7-22",
-        "emoji": "😜",
-        "cards": [
-            "b001",
-            "r001",
-            "b014",
-            "r014",
-            "b030",
-            "r030",
-            "e003"
-            
-        ],
-        "odd_card": "g009",
-        "shuffle": true,
-        "no_bury": true
-    },
-    {
-        "name": "Josh's playset #1",
-        "id": "josh1",
-        "emoji": "*️⃣",
-        "players": "6-21",
-        "cards": [
-            "b001",
-            "r001",
-            "b015",
-            "r015",
-            "b016",
-            "r016"
-        ],
-        "odd_card": "g014",
-        "shuffle": true,
-        "no_bury": false
-    },
-    {
-        "name": "Josh's Lepotato",
-        "id": "josh2",
-        "emoji": "*️⃣",
-        "players": "6-21",
-        "cards": [
-            "b001",
-            "r001",
-            "b014",
-            "r014",
-            "g009",
-            "e001"
-        ],
-        "odd_card": "g018",
-        "shuffle": true,
-        "no_bury": false
-    },
-    {
-        "name": "Meme's Just a Psych Game",
-        "id": "pizzaguy1",
-        "emoji": "🍕",
-        "players": "6-21",
-        "cards": [
-            "b001",
-            "r001",
-            "b014",
-            "r014",
-            "b010",
-            "r010",
-            "b027",
-            "r027"
-        ],
-        "odd_card": "g014",
-        "shuffle": true,
-        "no_bury": false
-    },
-    {
-        "name": "Lars' Changing Leadership",
-        "id": "Lars1",
-        "emoji": "🧊",
-        "players": "8-23",
-        "cards": [
-            "b001",
-            "r001",
-            "b014",
-            "r014",
-            "b032",
-            "r032",
-            "g003",
-            "g015",
-            "g013"
-        ],
-        "shuffle": true,
-        "no_bury": false
-    },
-    {
-        "name": "Lars' Secret Alliances",
-        "id": "Lars2",
-        "emoji": "🧊",
-        "players": "7-21",
-        "cards": [
-            "b001",
-            "r001",
-            "g024",
-            "g026",
-            "g007",
-            "g006",
-            "g022"
-        ],
-        "shuffle": true,
-        "no_bury": false
-    }
+  {
+    "name": "My first hot potato",
+    "id": "f0001",
+    "emoji": "🥔",
+    "players": "6-17",
+    "cards": ["b001", "r001", "g009"],
+    "odd_card": "g006",
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "Love or hate or travel",
+    "id": "f0002",
+    "emoji": "🖤",
+    "players": "8-23",
+    "cards": ["b001", "r001", "b011", "r011", "g023", "g011", "g002", "g017"],
+    "odd_card": "g027",
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "I'm not green, trust me",
+    "id": "f0003",
+    "emoji": "🌳",
+    "players": "9-24",
+    "cards": [
+      "b001",
+      "r001",
+      "b014",
+      "r014",
+      "e003",
+      "g024",
+      "g026",
+      "g007",
+      "g006"
+    ],
+    "odd_card": "g009",
+    "shuffle": true,
+    "no_bury": true
+  },
+  {
+    "name": "The cover up 2.0",
+    "id": "f0004",
+    "players": "14-31",
+    "emoji": "🧱",
+    "cards": [
+      "b001",
+      "r001",
+      "b014",
+      "r014",
+      "b034",
+      "r034",
+      "b016",
+      "r016",
+      "b011",
+      "r011",
+      "b019",
+      "r019",
+      "b030",
+      "r030",
+      "b032",
+      "r032",
+      "b006",
+      "r006"
+    ],
+    "odd_card": "g027",
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "Sharing is caring",
+    "id": "f0005",
+    "players": "8-23",
+    "emoji": "🧨",
+    "cards": ["b001", "r001", "b014", "r014", "b034", "r034", "b016", "r016"],
+    "odd_card": "g013",
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "Hostage Mayhem",
+    "id": "f0006",
+    "players": "14-31",
+    "emoji": "🔀",
+    "cards": [
+      "b001",
+      "r001",
+      "b034",
+      "r034",
+      "b011",
+      "r011",
+      "b019",
+      "r019",
+      "b030",
+      "r030",
+      "b006",
+      "r006",
+      "b028",
+      "r028",
+      "b003",
+      "r003",
+      "b033",
+      "r033"
+    ],
+    "odd_card": "g027",
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "I'm on your team.",
+    "id": "f0007",
+    "players": "7-22",
+    "emoji": "😜",
+    "cards": ["b001", "r001", "b014", "r014", "b030", "r030", "e003"],
+    "odd_card": "g009",
+    "shuffle": true,
+    "no_bury": true
+  },
+  {
+    "name": "Josh's playset #1",
+    "id": "josh1",
+    "emoji": "*️⃣",
+    "players": "6-21",
+    "cards": ["b001", "r001", "b015", "r015", "b016", "r016"],
+    "odd_card": "g014",
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "Josh's Lepotato",
+    "id": "josh2",
+    "emoji": "*️⃣",
+    "players": "6-21",
+    "cards": ["b001", "r001", "b014", "r014", "g009", "e001"],
+    "odd_card": "g018",
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "Meme's Just a Psych Game",
+    "id": "pizzaguy1",
+    "emoji": "🍕",
+    "players": "6-21",
+    "cards": ["b001", "r001", "b014", "r014", "b010", "r010", "b027", "r027"],
+    "odd_card": "g014",
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "Lars' Changing Leadership",
+    "id": "Lars1",
+    "emoji": "🧊",
+    "players": "8-23",
+    "cards": [
+      "b001",
+      "r001",
+      "b014",
+      "r014",
+      "b032",
+      "r032",
+      "g003",
+      "g015",
+      "g013"
+    ],
+    "shuffle": true,
+    "no_bury": false
+  },
+  {
+    "name": "Lars' Secret Alliances",
+    "id": "Lars2",
+    "emoji": "🧊",
+    "players": "7-21",
+    "cards": ["b001", "r001", "g024", "g026", "g007", "g006", "g022"],
+    "shuffle": true,
+    "no_bury": false
+  }
 ]

@@ -1,15 +1,10 @@
 export function promiser() {
-    var promiseResolve, promiseReject;
+  var promiseResolve, promiseReject;
 
-    const promise = new Promise(function (resolve, reject) {
-        promiseResolve = resolve;
-        promiseReject = reject;
-    });
+  const promise = new Promise(function (resolve, reject) {
+    promiseResolve = resolve;
+    promiseReject = reject;
+  });
 
-    return {promise, promiseResolve, promiseReject};
+  return { promise, promiseResolve, promiseReject };
 }
-
-
-
-
-

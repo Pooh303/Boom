@@ -1,133 +1,121 @@
 [
-    {
-        "name": "Yellow Team",
-        "name_th": "ทีมสีเหลือง (Yellow Team)",
-        "id": "y000",
-        "description": "Help the Assassin",
-        "description_th": "ช่วยเหลือนักฆ่า",
-        "links": [],
-        "src": "/yellow/sword.png",
-        "info": "You are on the Yellow Team.\nYou win if the President is in the same Room as the Assassin but the Bomber is not\r\n\r\nNote: Any character card that has the dagger icon on it is considered to be on the Yellow Team (except spies).",
-        "info_th": "คุณอยู่ทีมสีเหลือง\nคุณจะชนะหากประธานาธิบดีอยู่ในห้องเดียวกับนักฆ่า แต่มือระเบิดไม่ได้อยู่ในห้องนั้น\n\nหมายเหตุ: การ์ดตัวละครใดๆ ที่มีไอคอนรูปมีดสั้นถือว่าอยู่ทีมสีเหลือง (ยกเว้นสายลับ)",
-        "tags": "custom patch1 v2 friends",
-        "color_name": "yellow",
-        "difficulty": 1
+  {
+    "name": "Yellow Team",
+    "name_th": "ทีมสีเหลือง (Yellow Team)",
+    "id": "y000",
+    "description": "Help the Assassin",
+    "description_th": "ช่วยเหลือนักฆ่า",
+    "links": [],
+    "src": "/yellow/sword.png",
+    "info": "You are on the Yellow Team.\nYou win if the President is in the same Room as the Assassin but the Bomber is not\r\n\r\nNote: Any character card that has the dagger icon on it is considered to be on the Yellow Team (except spies).",
+    "info_th": "คุณอยู่ทีมสีเหลือง\nคุณจะชนะหากประธานาธิบดีอยู่ในห้องเดียวกับนักฆ่า แต่มือระเบิดไม่ได้อยู่ในห้องนั้น\n\nหมายเหตุ: การ์ดตัวละครใดๆ ที่มีไอคอนรูปมีดสั้นถือว่าอยู่ทีมสีเหลือง (ยกเว้นสายลับ)",
+    "tags": "custom patch1 v2 friends",
+    "color_name": "yellow",
+    "difficulty": 1
+  },
+  {
+    "name": "ASSASSIN",
+    "name_th": "นักฆ่า (Assassin)",
+    "id": "y001",
+    "primary": true,
+    "backup_cards": ["placeholder"],
+    "description": "Be with the President but not the Bomber",
+    "description_th": "อยู่กับประธานาธิบดี แต่ห้ามอยู่กับมือระเบิด",
+    "links": [],
+    "src": "/yellow/hood.png",
+    "info": "You are on the Yellow Team. If the President does not gain the \"dead\" condition and you are in the same room as the President Yellow Team wins, but Blue & Red Team lose. If the the President, Bomber, and you all end in the same room, then the Yellow Team, Blue Team, and even Red Team lose.\r\n\r\nNote: Only when playing without any additional \"Yellow Team\" characters, you also have YELLOW power. Any player that card or color shares with you joins the Yellow Team. New members of Yellow Team maintain their powers and conditions, but their allegiance (and therefore win condition) changes to Yellow Team. However, the YELLOW power does not work on primary characters (e.g. President, Bomber).",
+    "info_th": "คุณอยู่ทีมสีเหลือง หากประธานาธิบดีไม่ได้รับสถานะ \"เสียชีวิต\" และคุณอยู่ในห้องเดียวกับประธานาธิบดี ทีมสีเหลืองจะชนะ ส่วนทีมสีฟ้าและทีมสีแดงจะแพ้ หากประธานาธิบดี มือระเบิด และตัวคุณ จบเกมในห้องเดียวกันทั้งหมด ทีมสีเหลือง ทีมสีฟ้า และแม้แต่ทีมสีแดงจะแพ้ทั้งหมด\n\nหมายเหตุ: เฉพาะเมื่อเล่นโดยไม่มีตัวละคร \"ทีมสีเหลือง\" ใบอื่นเลย คุณจะมีพลังสีเหลือง (YELLOW) ด้วย: ผู้เล่นคนใดก็ตามที่เปิดเผยการ์ดหรือเปิดเผยสีกับคุณ จะต้องย้ายมาเข้าร่วมทีมสีเหลือง สมาชิกใหม่ของทีมสีเหลืองจะยังคงมีพลังและสถานะเดิม แต่ความภักดี (และเงื่อนไขการชนะ) จะเปลี่ยนไปเป็นของทีมสีเหลือง อย่างไรก็ตาม พลังสีเหลืองนี้จะใช้ไม่ได้ผลกับตัวละครหลัก (เช่น ประธานาธิบดี, มือระเบิด)",
+    "credit": {
+      "text": "Image from pngtree.com",
+      "link": "https://pngtree.com/freepng/anonymous-in-a-hood-red-concept-vector_6109862.html"
     },
-    {
-        "name": "ASSASSIN",
-        "name_th": "นักฆ่า (Assassin)",
-        "id": "y001",
-        "primary": true,
-        "backup_cards": [
-            "placeholder"
-        ],
-        "description": "Be with the President but not the Bomber",
-        "description_th": "อยู่กับประธานาธิบดี แต่ห้ามอยู่กับมือระเบิด",
-        "links": [],
-        "src": "/yellow/hood.png",
-        "info": "You are on the Yellow Team. If the President does not gain the \"dead\" condition and you are in the same room as the President Yellow Team wins, but Blue & Red Team lose. If the the President, Bomber, and you all end in the same room, then the Yellow Team, Blue Team, and even Red Team lose.\r\n\r\nNote: Only when playing without any additional \"Yellow Team\" characters, you also have YELLOW power. Any player that card or color shares with you joins the Yellow Team. New members of Yellow Team maintain their powers and conditions, but their allegiance (and therefore win condition) changes to Yellow Team. However, the YELLOW power does not work on primary characters (e.g. President, Bomber).",
-        "info_th": "คุณอยู่ทีมสีเหลือง หากประธานาธิบดีไม่ได้รับสถานะ \"เสียชีวิต\" และคุณอยู่ในห้องเดียวกับประธานาธิบดี ทีมสีเหลืองจะชนะ ส่วนทีมสีฟ้าและทีมสีแดงจะแพ้ หากประธานาธิบดี มือระเบิด และตัวคุณ จบเกมในห้องเดียวกันทั้งหมด ทีมสีเหลือง ทีมสีฟ้า และแม้แต่ทีมสีแดงจะแพ้ทั้งหมด\n\nหมายเหตุ: เฉพาะเมื่อเล่นโดยไม่มีตัวละคร \"ทีมสีเหลือง\" ใบอื่นเลย คุณจะมีพลังสีเหลือง (YELLOW) ด้วย: ผู้เล่นคนใดก็ตามที่เปิดเผยการ์ดหรือเปิดเผยสีกับคุณ จะต้องย้ายมาเข้าร่วมทีมสีเหลือง สมาชิกใหม่ของทีมสีเหลืองจะยังคงมีพลังและสถานะเดิม แต่ความภักดี (และเงื่อนไขการชนะ) จะเปลี่ยนไปเป็นของทีมสีเหลือง อย่างไรก็ตาม พลังสีเหลืองนี้จะใช้ไม่ได้ผลกับตัวละครหลัก (เช่น ประธานาธิบดี, มือระเบิด)",
-        "credit": {
-            "text": "Image from pngtree.com",
-            "link": "https://pngtree.com/freepng/anonymous-in-a-hood-red-concept-vector_6109862.html"
-        },
-        "tags": "custom patch1 v2 friends primary",
-        "color_name": "yellow",
-        "difficulty": 4
-    },
-    {
-        "name": "WEAPONSMITH",
-        "name_th": "ช่างทำอาวุธ (Weaponsmith)",
-        "id": "y003",
-        "description": "Be with the President but not the Bomber",
-        "description_th": "อยู่กับประธานาธิบดี แต่ห้ามอยู่กับมือระเบิด",
-        "backup_cards": [
-            "placeholder"
-        ],
-        "links": [],
-        "src": "/yellow/smith.png",
-        "info": "When playing with the Weaponsmith, the Yellow Team has the following additional win condition: the Assasin must card share with the Weaponsmith before the end of the game or the Yellow Team loses. At the end of the game, the Assasin will be asked if he/she card shared with the Weaponsmith. At that time both players will verify or deny having card shared.\r\n\r\nNote: remember that if the Assasin character ever switches player control (perhaps due to the Hot Potato), then the new Assasin must card share with the Weaponsmith to prevent losing.",
-        "info_th": "เมื่อเล่นโดยมีช่างทำอาวุธ ทีมสีเหลืองจะมีเงื่อนไขการชนะเพิ่มเติมคือ: นักฆ่าต้องเปิดเผยการ์ด (Card Share) กับช่างทำอาวุธก่อนที่เกมจะจบลง มิฉะนั้นทีมสีเหลืองจะแพ้ เมื่อจบเกม นักฆ่าจะถูกถามว่าได้เปิดเผยการ์ดกับช่างทำอาวุธหรือไม่ ตอนนั้นผู้เล่นทั้งสองจะต้องยืนยันหรือปฏิเสธ\n\nหมายเหตุ: อย่าลืมว่าหากนักฆ่าถูกสลับสับเปลี่ยนผู้ถือการ์ด (เช่น จากเผือกร้อน) นักฆ่าคนใหม่ก็จะต้องเปิดเผยการ์ดกับช่างทำอาวุธด้วย เพื่อไม่ให้ทีมของตนแพ้",
-        "tags": "custom patch1 v2 friends",
-        "color_name": "yellow",
-        "difficulty": 5
-    },
-    {
-        "name": "BLUE SPY",
-        "name_th": "สายลับสีฟ้า (Blue Spy)",
-        "id": "blueyellowspy",
-        "description": "YOU LOOK LIKE YOU ARE YELLOW",
-        "description_th": "หน้าการ์ดคุณดูเหมือนอยู่ทีมสีเหลือง",
-        "links": [
-            "yellowbluespy"
-        ],
-        "src": "/yellow/wing.png",
-        "info": "This is a special character card that is the color of an opposing team. This means that the blue Spy has an allegiance to the Blue Team, but their card is yellow.",
-        "info_th": "นี่คือการ์ดตัวละครพิเศษที่มีสีหน้าการ์ดเป็นของทีมตรงข้าม นั่นหมายความว่าสายลับสีฟ้าจะมีความภักดีอยู่ฝ่ายเดียวกับทีมสีฟ้า แต่ตัวการ์ดของพวกเขาเป็นสีเหลือง",
-        "tags": "custom patch1 v2 friends",
-        "color_name": "yellow",
-        "difficulty": 7
-    },
-    {
-        "name": "RED SPY",
-        "name_th": "สายลับสีแดง (Red Spy)",
-        "id": "redyellowspy",
-        "description": "YOU LOOK LIKE YOU ARE YELLOW",
-        "description_th": "หน้าการ์ดคุณดูเหมือนอยู่ทีมสีเหลือง",
-        "links": [
-            "yellowredspy"
-        ],
-        "src": "/yellow/staff.png",
-        "info": "This is a special character card that is the color of an opposing team. This means that the red Spy has an allegiance to the Red Team, but their card is yellow.",
-        "info_th": "นี่คือการ์ดตัวละครพิเศษที่มีสีหน้าการ์ดเป็นของทีมตรงข้าม นั่นหมายความว่าสายลับสีแดงจะมีความภักดีอยู่ฝ่ายเดียวกับทีมสีแดง แต่ตัวการ์ดของพวกเขาเป็นสีเหลือง",
-        "tags": "custom patch1 v2 friends",
-        "color_name": "yellow",
-        "difficulty": 7
-    },
-    {
-        "name": "YELLOW SPY",
-        "name_th": "สายลับสีเหลือง (Yellow Spy)",
-        "id": "yellowbluespy",
-        "description": "YOU LOOK LIKE YOU ARE BLUE",
-        "description_th": "หน้าการ์ดคุณดูเหมือนอยู่ทีมสีฟ้า",
-        "links": [
-            "blueyellowspy"
-        ],
-        "src": "/blue/sword.png",
-        "info": "This is a special character card that is the color of an opposing team. This means that the yellow Spy has an allegiance to the Yellow Team, but their card is blue.",
-        "info_th": "นี่คือการ์ดตัวละครพิเศษที่มีสีหน้าการ์ดเป็นของทีมตรงข้าม นั่นหมายความว่าสายลับสีเหลืองจะมีความภักดีอยู่ฝ่ายเดียวกับทีมสีเหลือง แต่ตัวการ์ดของพวกเขาเป็นสีฟ้า",
-        "tags": "custom patch1 v2 friends",
-        "color_name": "blue",
-        "difficulty": 7
-    },
-    {
-        "name": "YELLOW SPY",
-        "name_th": "สายลับสีเหลือง (Yellow Spy)",
-        "id": "yellowredspy",
-        "description": "YOU LOOK LIKE YOU ARE RED",
-        "description_th": "หน้าการ์ดคุณดูเหมือนอยู่ทีมสีแดง",
-        "links": [
-            "redyellowspy"
-        ],
-        "src": "/red/sword.png",
-        "info": "This is a special character card that is the color of an opposing team. This means that the yellow Spy has an allegiance to the Yellow Team, but their card is red.",
-        "info_th": "นี่คือการ์ดตัวละครพิเศษที่มีสีหน้าการ์ดเป็นของทีมตรงข้าม นั่นหมายความว่าสายลับสีเหลืองจะมีความภักดีอยู่ฝ่ายเดียวกับทีมสีเหลือง แต่ตัวการ์ดของพวกเขาเป็นสีแดง",
-        "tags": "custom patch1 v2 friends",
-        "color_name": "red",
-        "difficulty": 7
-    },
-    {
-        "name": "USURPER",
-        "name_th": "ผู้แย่งชิง (Usurper)",
-        "id": "y004",
-        "description": "PERMANENT PUBLIC REVEAL >> BECOME LEADER",
-        "description_th": "หงายการ์ดโชว์ตลอดกาล >> กลายเป็นผู้นำ",
-        "links": [],
-        "src": "/yellow/crown.png",
-        "info": "You have the USURPER power: during any round but the last, you may publicly reveal your card and become the leader. However, your card must permanently remain publicly revealed for the rest of the game. This means that you can only use this power once. You cannot be usurped during the same round in which you used your USURPER power, not even by another Usurper. If 2 Usurpers use their power in the same room during the same round, whichever Usurper used their power first remains the leader, the other Usurper wasted their power.",
-        "info_th": "คุณมีพลังของผู้แย่งชิง (USURPER): ในรอบใดก็ได้ที่ไม่ใช่รอบสุดท้าย คุณสามารถหงายการ์ดโชว์ให้ทุกคนเห็นเพื่อตั้งตัวเป็นผู้นำห้องได้ทันที อย่างไรก็ตาม การ์ดของคุณจะต้องหงายโชว์ไปตลอดช่วงเวลาที่เหลือของเกม หมายความว่าคุณใช้พลังนี้ได้เพียงครั้งเดียว คุณจะไม่สามารถถูกโค่นล้มตำแหน่งในรอบเดียวกันกับที่คุณใช้พลังนี้ แม้ว่าจะมีผู้แย่งชิงคนอื่นมาทำแบบเดียวกันก็ตาม หากมีผู้แย่งชิง 2 คนใช้พลังในห้องเดียวกันในรอบเดียวกัน ใครที่ใช้พลังก่อนจะได้เป็นผู้นำ ส่วนผู้แย่งชิงอีกคนถือว่าเสียพลังไปฟรีๆ",
-        "tags": "v1 official",
-        "color_name": "yellow",
-        "difficulty": 6
-    }
+    "tags": "custom patch1 v2 friends primary",
+    "color_name": "yellow",
+    "difficulty": 4
+  },
+  {
+    "name": "WEAPONSMITH",
+    "name_th": "ช่างทำอาวุธ (Weaponsmith)",
+    "id": "y003",
+    "description": "Be with the President but not the Bomber",
+    "description_th": "อยู่กับประธานาธิบดี แต่ห้ามอยู่กับมือระเบิด",
+    "backup_cards": ["placeholder"],
+    "links": [],
+    "src": "/yellow/smith.png",
+    "info": "When playing with the Weaponsmith, the Yellow Team has the following additional win condition: the Assasin must card share with the Weaponsmith before the end of the game or the Yellow Team loses. At the end of the game, the Assasin will be asked if he/she card shared with the Weaponsmith. At that time both players will verify or deny having card shared.\r\n\r\nNote: remember that if the Assasin character ever switches player control (perhaps due to the Hot Potato), then the new Assasin must card share with the Weaponsmith to prevent losing.",
+    "info_th": "เมื่อเล่นโดยมีช่างทำอาวุธ ทีมสีเหลืองจะมีเงื่อนไขการชนะเพิ่มเติมคือ: นักฆ่าต้องเปิดเผยการ์ด (Card Share) กับช่างทำอาวุธก่อนที่เกมจะจบลง มิฉะนั้นทีมสีเหลืองจะแพ้ เมื่อจบเกม นักฆ่าจะถูกถามว่าได้เปิดเผยการ์ดกับช่างทำอาวุธหรือไม่ ตอนนั้นผู้เล่นทั้งสองจะต้องยืนยันหรือปฏิเสธ\n\nหมายเหตุ: อย่าลืมว่าหากนักฆ่าถูกสลับสับเปลี่ยนผู้ถือการ์ด (เช่น จากเผือกร้อน) นักฆ่าคนใหม่ก็จะต้องเปิดเผยการ์ดกับช่างทำอาวุธด้วย เพื่อไม่ให้ทีมของตนแพ้",
+    "tags": "custom patch1 v2 friends",
+    "color_name": "yellow",
+    "difficulty": 5
+  },
+  {
+    "name": "BLUE SPY",
+    "name_th": "สายลับสีฟ้า (Blue Spy)",
+    "id": "blueyellowspy",
+    "description": "YOU LOOK LIKE YOU ARE YELLOW",
+    "description_th": "หน้าการ์ดคุณดูเหมือนอยู่ทีมสีเหลือง",
+    "links": ["yellowbluespy"],
+    "src": "/yellow/wing.png",
+    "info": "This is a special character card that is the color of an opposing team. This means that the blue Spy has an allegiance to the Blue Team, but their card is yellow.",
+    "info_th": "นี่คือการ์ดตัวละครพิเศษที่มีสีหน้าการ์ดเป็นของทีมตรงข้าม นั่นหมายความว่าสายลับสีฟ้าจะมีความภักดีอยู่ฝ่ายเดียวกับทีมสีฟ้า แต่ตัวการ์ดของพวกเขาเป็นสีเหลือง",
+    "tags": "custom patch1 v2 friends",
+    "color_name": "yellow",
+    "difficulty": 7
+  },
+  {
+    "name": "RED SPY",
+    "name_th": "สายลับสีแดง (Red Spy)",
+    "id": "redyellowspy",
+    "description": "YOU LOOK LIKE YOU ARE YELLOW",
+    "description_th": "หน้าการ์ดคุณดูเหมือนอยู่ทีมสีเหลือง",
+    "links": ["yellowredspy"],
+    "src": "/yellow/staff.png",
+    "info": "This is a special character card that is the color of an opposing team. This means that the red Spy has an allegiance to the Red Team, but their card is yellow.",
+    "info_th": "นี่คือการ์ดตัวละครพิเศษที่มีสีหน้าการ์ดเป็นของทีมตรงข้าม นั่นหมายความว่าสายลับสีแดงจะมีความภักดีอยู่ฝ่ายเดียวกับทีมสีแดง แต่ตัวการ์ดของพวกเขาเป็นสีเหลือง",
+    "tags": "custom patch1 v2 friends",
+    "color_name": "yellow",
+    "difficulty": 7
+  },
+  {
+    "name": "YELLOW SPY",
+    "name_th": "สายลับสีเหลือง (Yellow Spy)",
+    "id": "yellowbluespy",
+    "description": "YOU LOOK LIKE YOU ARE BLUE",
+    "description_th": "หน้าการ์ดคุณดูเหมือนอยู่ทีมสีฟ้า",
+    "links": ["blueyellowspy"],
+    "src": "/blue/sword.png",
+    "info": "This is a special character card that is the color of an opposing team. This means that the yellow Spy has an allegiance to the Yellow Team, but their card is blue.",
+    "info_th": "นี่คือการ์ดตัวละครพิเศษที่มีสีหน้าการ์ดเป็นของทีมตรงข้าม นั่นหมายความว่าสายลับสีเหลืองจะมีความภักดีอยู่ฝ่ายเดียวกับทีมสีเหลือง แต่ตัวการ์ดของพวกเขาเป็นสีฟ้า",
+    "tags": "custom patch1 v2 friends",
+    "color_name": "blue",
+    "difficulty": 7
+  },
+  {
+    "name": "YELLOW SPY",
+    "name_th": "สายลับสีเหลือง (Yellow Spy)",
+    "id": "yellowredspy",
+    "description": "YOU LOOK LIKE YOU ARE RED",
+    "description_th": "หน้าการ์ดคุณดูเหมือนอยู่ทีมสีแดง",
+    "links": ["redyellowspy"],
+    "src": "/red/sword.png",
+    "info": "This is a special character card that is the color of an opposing team. This means that the yellow Spy has an allegiance to the Yellow Team, but their card is red.",
+    "info_th": "นี่คือการ์ดตัวละครพิเศษที่มีสีหน้าการ์ดเป็นของทีมตรงข้าม นั่นหมายความว่าสายลับสีเหลืองจะมีความภักดีอยู่ฝ่ายเดียวกับทีมสีเหลือง แต่ตัวการ์ดของพวกเขาเป็นสีแดง",
+    "tags": "custom patch1 v2 friends",
+    "color_name": "red",
+    "difficulty": 7
+  },
+  {
+    "name": "USURPER",
+    "name_th": "ผู้แย่งชิง (Usurper)",
+    "id": "y004",
+    "description": "PERMANENT PUBLIC REVEAL >> BECOME LEADER",
+    "description_th": "หงายการ์ดโชว์ตลอดกาล >> กลายเป็นผู้นำ",
+    "links": [],
+    "src": "/yellow/crown.png",
+    "info": "You have the USURPER power: during any round but the last, you may publicly reveal your card and become the leader. However, your card must permanently remain publicly revealed for the rest of the game. This means that you can only use this power once. You cannot be usurped during the same round in which you used your USURPER power, not even by another Usurper. If 2 Usurpers use their power in the same room during the same round, whichever Usurper used their power first remains the leader, the other Usurper wasted their power.",
+    "info_th": "คุณมีพลังของผู้แย่งชิง (USURPER): ในรอบใดก็ได้ที่ไม่ใช่รอบสุดท้าย คุณสามารถหงายการ์ดโชว์ให้ทุกคนเห็นเพื่อตั้งตัวเป็นผู้นำห้องได้ทันที อย่างไรก็ตาม การ์ดของคุณจะต้องหงายโชว์ไปตลอดช่วงเวลาที่เหลือของเกม หมายความว่าคุณใช้พลังนี้ได้เพียงครั้งเดียว คุณจะไม่สามารถถูกโค่นล้มตำแหน่งในรอบเดียวกันกับที่คุณใช้พลังนี้ แม้ว่าจะมีผู้แย่งชิงคนอื่นมาทำแบบเดียวกันก็ตาม หากมีผู้แย่งชิง 2 คนใช้พลังในห้องเดียวกันในรอบเดียวกัน ใครที่ใช้พลังก่อนจะได้เป็นผู้นำ ส่วนผู้แย่งชิงอีกคนถือว่าเสียพลังไปฟรีๆ",
+    "tags": "v1 official",
+    "color_name": "yellow",
+    "difficulty": 6
+  }
 ]

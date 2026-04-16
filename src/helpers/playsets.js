@@ -61,25 +61,27 @@ export function getAllPlaysetsArray() {
 export async function getPlaysetById(id, user_id, options = {}) {
   const { refreshInBackground = false, ignoreCache = false } = options;
 
-
   var playset;
   var hasFetchedAlready = false;
   const internalPlaysets = getAllPlaysetsArray();
   playset = internalPlaysets.filter((p) => p.id === id)?.[0] || null;
+  const isInternal = !!playset;
   if (!playset) {
     // local storage cache
-    playset = JSON.parse(localStorage.getItem("cached-playset-" + (user_id || "") + id));
+    playset = JSON.parse(
+      localStorage.getItem("cached-playset-" + (user_id || "") + id),
+    );
   }
-  if (!playset || ignoreCache) {
+  if (!isInternal && (!playset || ignoreCache)) {
     // supabase + cache after
 
     playset = await fetchAndCachePlayset(id, user_id);
 
     if (playset) hasFetchedAlready = true;
-
   }
 
-  if (refreshInBackground && !hasFetchedAlready) fetchAndCachePlayset(id, user_id);
+  if (refreshInBackground && !hasFetchedAlready && !isInternal)
+    fetchAndCachePlayset(id, user_id);
   return playset || null;
 }
 async function fetchAndCachePlayset(id, user_id) {
@@ -88,14 +90,16 @@ async function fetchAndCachePlayset(id, user_id) {
     .select(`*`)
     .eq("id", id)
     .maybeSingle()
-    .limit(1)
+    .limit(1);
 
   //   console.log(error, playsetData);
 
-
   if (playsetData) {
     const playset = playsetData;
-    localStorage.setItem("cached-playset-" + (user_id || "") + id, JSON.stringify(playset));
+    localStorage.setItem(
+      "cached-playset-" + (user_id || "") + id,
+      JSON.stringify(playset),
+    );
   }
 
   return playsetData;
@@ -137,7 +141,7 @@ export function maximizePlayset(playset) {
 
   copy.primaries = copy?.primaries?.map((cid) => getCardFromId(cid?.id || cid));
   copy.default_cards = copy?.default_cards?.map((cid) =>
-    getCardFromId(cid?.id || cid)
+    getCardFromId(cid?.id || cid),
   );
   copy.cards = copy?.cards?.map((cid) => getCardFromId(cid?.id || cid));
   copy.odd_card = getCardFromId(copy?.odd_card?.id || copy?.odd_card) || null;
@@ -150,11 +154,22 @@ export function allCardsInRow(playset) {
   const primaries = playset?.primaries || [];
   const default_cards = playset?.default_cards || [];
 
-  const allCardsInRow =  [...cards, ...primaries, odd_card, ...default_cards]
+  const allCardsInRow = [...cards, ...primaries, odd_card, ...default_cards]
     .filter((c) => c !== null)
     .map((c) => getCardFromId(c?.id || c));
 
-    // console.log(JSON.stringify(allCardsInRow?.map(c => c?.id)))
+  // console.log(JSON.stringify(allCardsInRow?.map(c => c?.id)))
 
-    return allCardsInRow;
+  return allCardsInRow;
+}
+
+/**
+ * Checks if a playset is a preset (official/hardcoded) based on its ID.
+ * User-created playsets have UUIDs (length 36), while presets have short IDs (e.g., t0001, o0001).
+ * @param {string} id
+ * @returns {boolean}
+ */
+export function isPresetPlayset(id) {
+  if (!id) return false;
+  return String(id).length < 10;
 }

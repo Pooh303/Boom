@@ -1,6 +1,4 @@
-
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /**
  * Custom hook to detect if a component has been rendered or mounted.

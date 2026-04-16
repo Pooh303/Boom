@@ -10,7 +10,12 @@ import GardenCards from "../config/cards/garden.json";
 // icons
 import { FaBomb, FaTheaterMasks } from "react-icons/fa";
 import { AiFillStar } from "react-icons/ai";
-import { GiBrain, GiBottleCap, GiThrownKnife, GiTreeBranch } from "react-icons/gi";
+import {
+  GiBrain,
+  GiBottleCap,
+  GiThrownKnife,
+  GiTreeBranch,
+} from "react-icons/gi";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
 import { getPlaysetById } from "./playsets";
 import { rng } from "./idgen";
@@ -29,7 +34,6 @@ export const CARD_COLOR_ORDER = [
 ];
 
 export const CARD_COLOR_FILTER_OPTIONS = ["blue", "red", "grey", "green"];
-
 
 export const CARD_COLORS = {
   red: {
@@ -97,7 +101,7 @@ export const CARD_COLORS = {
     text: "#ffffff",
     title: "Team Garden",
     icon: GiTreeBranch,
-  }
+  },
 };
 
 export function getCardsForPlayset({
@@ -109,7 +113,6 @@ export function getCardsForPlayset({
 
   var { primaries, cards, odd_card, shuffle, default_cards } = maximizedPlayset;
 
-  
   const defaultCards = default_cards || [
     getCardFromId("b000"),
     getCardFromId("r000"),
@@ -138,7 +141,6 @@ export function getCardsForPlayset({
   }
 
   if (defaultCardsHowManyPairsToAdd > 0) {
-
     for (let i = 0; i < defaultCardsHowManyPairsToAdd; i++) {
       allCards.push(...defaultCards);
     }
@@ -179,21 +181,31 @@ export function getCardsForPlayset({
 
   const combinations = getAllPairCombinationsToReachPlayerCount(
     cardPairsStats,
-    cardsNeededCount
+    cardsNeededCount,
   );
 
   if (shuffle) {
-    const shuffledCardPairsInStats = cardPairsStats.map((stat) => { // shuffles only not default cards
+    const shuffledCardPairsInStats = cardPairsStats.map((stat) => {
+      // shuffles only not default cards
       // only suffle the pairs that are not the defaultCards
       const cardPairs = [...stat.cardPairs];
-      const defaultCardPairs = stat?.pairLength !== defaultCards?.length ? [] : cardPairs.splice(cardPairs?.length - defaultCardsHowManyPairsToAdd, defaultCardsHowManyPairsToAdd);
-      defaultCardPairs.forEach((pair) => { // everything that is not a default card pair will be pushed back into cardPairs, tht then will be shuffled
-        const isADefaultCardPair = pair.filter((c) => defaultCards.filter((dc) => dc?.id === c?.id)?.[0]).length === pair.length;
+      const defaultCardPairs =
+        stat?.pairLength !== defaultCards?.length
+          ? []
+          : cardPairs.splice(
+              cardPairs?.length - defaultCardsHowManyPairsToAdd,
+              defaultCardsHowManyPairsToAdd,
+            );
+      defaultCardPairs.forEach((pair) => {
+        // everything that is not a default card pair will be pushed back into cardPairs, tht then will be shuffled
+        const isADefaultCardPair =
+          pair.filter((c) => defaultCards.filter((dc) => dc?.id === c?.id)?.[0])
+            .length === pair.length;
         if (!isADefaultCardPair) cardPairs.push(pair);
       });
-      console.log("cardPairs", cardPairs, defaultCardPairs)
+      console.log("cardPairs", cardPairs, defaultCardPairs);
       cardPairs.sort(() => 0.5 - Math.random());
-      
+
       const shuffledPairs = [...cardPairs, ...defaultCardPairs];
       return {
         ...stat,
@@ -206,7 +218,7 @@ export function getCardsForPlayset({
     if (!randomCombination) randomCombination = sampleCombination; // if no combinations found
     const cardPairs = randomCombination.map((pairLength, i) => {
       const stat = shuffledCardPairsInStats.find(
-        (stat) => stat.pairLength === pairLength
+        (stat) => stat.pairLength === pairLength,
       );
       var howManyOfSamePairLengthBefore = 0;
       randomCombination.forEach((pairLength, index) => {
@@ -216,7 +228,6 @@ export function getCardsForPlayset({
       const cardPair = stat.cardPairs[howManyOfSamePairLengthBefore];
       return cardPair;
     });
-
 
     for (let i = 0; i < cardPairs.length; i++) {
       out_cards = [...out_cards, ...cardPairs[i]];
@@ -245,7 +256,7 @@ export function getCardsForPlayset({
         const count = adaptedCombination[i];
         if (count !== pairLength) {
           const index = adaptedCombination.findIndex(
-            (c, j) => c === pairLength && j > i
+            (c, j) => c === pairLength && j > i,
           );
           if (index > -1) {
             const temp = adaptedCombination[i];
@@ -264,7 +275,7 @@ export function getCardsForPlayset({
     for (let i = 0; i < combinations.length; i++) {
       const adaptedCombination = adaptCombinationToSample(
         combinations[i],
-        sampleCombination
+        sampleCombination,
       );
       const score = scoreCombination(adaptedCombination, sampleCombination);
       if (score > bestCombinationScore || !bestCombination) {
@@ -280,12 +291,12 @@ export function getCardsForPlayset({
       bestCombination,
       sampleCombination,
       bestCombinationScore,
-      combinations
+      combinations,
     );
 
     const cardPairs = bestCombination.map((pairLength, i) => {
       const stat = cardPairsStats.find(
-        (stat) => stat.pairLength === pairLength
+        (stat) => stat.pairLength === pairLength,
       );
       var howManyOfSamePairLengthBefore = 0;
       bestCombination.forEach((pairLength, index) => {
@@ -313,7 +324,7 @@ export function getCardsForPlayset({
   console.log(
     "indexOfSoberCard",
     indexOfSoberCard,
-    out_cards?.filter((c) => c?.id !== "drunk")?.length
+    out_cards?.filter((c) => c?.id !== "drunk")?.length,
   );
   const soberCard = (() => {
     if (playingWithDrunk) {
@@ -394,7 +405,7 @@ function getAllPairCombinationsToReachPlayerCount(cardPairsStats, playerCount) {
           currentCombination,
           currentCount + pairLength,
           i,
-          counts
+          counts,
         );
         counts[i]++;
         currentCombination.pop();
@@ -440,7 +451,7 @@ export function getCardsForPlaysetOld(game_data) {
           cards = [
             ...cards,
             getCardFromId(
-              (default_cards?.map((c) => c?.id) || ["b000", "r000"])[rng(0, 1)]
+              (default_cards?.map((c) => c?.id) || ["b000", "r000"])[rng(0, 1)],
             ),
           ];
       } else {
@@ -448,8 +459,8 @@ export function getCardsForPlaysetOld(game_data) {
           getCardFromId(
             i % 2 === rngSeed
               ? default_cards?.[0]?.id || "b000"
-              : default_cards?.[1]?.id || "r000"
-          )
+              : default_cards?.[1]?.id || "r000",
+          ),
         );
       }
     }
@@ -472,7 +483,7 @@ export function getCardsForPlaysetOld(game_data) {
     }
 
     let unincludedCards = cards.filter((card) =>
-      includedCards.filter((ic) => ic?.id === card?.id)?.[0] ? false : true
+      includedCards.filter((ic) => ic?.id === card?.id)?.[0] ? false : true,
     );
     let pairedCardsRow = pairUpCards(unincludedCards);
 
@@ -484,7 +495,7 @@ export function getCardsForPlaysetOld(game_data) {
     let targetValue = length - includedCards?.length; // playercount(+bury) - prinaries
     let combinations = findIndexCombinations(
       pairedCardsRow.map((row) => row.length),
-      targetValue
+      targetValue,
     );
 
     if (combinations?.[0]) {
@@ -662,8 +673,8 @@ export function sortCards(cards, pairRB = false) {
       return x.color_name === colorName
         ? 1
         : y.color_name === colorName
-        ? -1
-        : 0;
+          ? -1
+          : 0;
     });
   }
 
@@ -716,8 +727,8 @@ export function getLinkedCardsPaired(card, sort = true) {
         return x.color_name === colorName
           ? 1
           : y.color_name === colorName
-          ? -1
-          : 0;
+            ? -1
+            : 0;
       });
     }
   }
