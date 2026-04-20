@@ -70,6 +70,8 @@ function VoteLeaderScreen({
   }, [voteCounts]);
 
   function handleVote(candidateId) {
+    // Official rule: "A player can never appoint themselves."
+    if (candidateId === me?.id) return;
     if (myVote === candidateId) {
       execute("retract-vote", [me?.id]);
     } else {
@@ -197,6 +199,7 @@ function VoteLeaderScreen({
                   isCurrentLeader={isCurrentLeader}
                   voteCount={voteCount}
                   onClick={() => handleVote(player.id)}
+                  disabled={isMe}
                   delay={700 + i * 60}
                   t={t}
                 />

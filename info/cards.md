@@ -1,0 +1,157 @@
+\---
+
+\# TWO ROOMS AND A BOOM - CARD DATABASE
+
+| Character Name (ชื่อตัวละคร) | Team (ทีม) | Card Text / Ability (ข้อความบนการ์ด) | Linked / Goes With (เงื่อนไขการจัดเด็ค) |
+
+| :--- | :--- | :--- | :--- |
+
+| \*\*AGENT\*\* | Blue / Red | FORCE A CARD SHARE ONCE PER ROUND | - |
+
+| \*\*AGORAPHOBE\*\* | Grey | NEVER LEAVE YOUR ROOM | - |
+
+| \*\*AHAB\*\* | Grey | STAY AWAY FROM MOBY AND THE BOMBER | (LINKED WITH MOBY) |
+
+| \*\*AMBASSADOR\*\* | Blue / Red | WALK FREELY BETWEEN THE ROOMS | - |
+
+| \*\*ANARCHIST\*\* | Grey | USURP ROOM LEADER A MAJORITY OF ROUNDS | - |
+
+| \*\*ANGEL\*\* | Blue / Red | TELL THE TRUTH | (GOES WITH DEMON) |
+
+| \*\*BLIND\*\* | Blue / Red | KEEP YOUR EYES CLOSED | - |
+
+| \*\*BLUE SPY\*\* | Red | YOU LOOK LIKE YOU ARE RED | - |
+
+| \*\*BLUE TEAM\*\* \*(Basic)\* | Blue | KEEP THE PRESIDENT AWAY FROM THE BOMBER | (GOES WITH RED TEAM) |
+
+| \*\*BOMB-BOT\*\* | Grey | BE WITH THE BOMBER, AVOID THE PRESIDENT | - |
+
+| \*\*BOMBER\*\* | Red | BE WITH THE PRESIDENT | (LINKED WITH PRESIDENT) |
+
+| \*\*BOUNCER\*\* | Blue / Red | KICK AN EXTRA PLAYER OUT | - |
+
+| \*\*BUTLER\*\* | Grey | BE WITH THE MAID AND THE PRESIDENT | (LINKED WITH MAID) |
+
+| \*\*CLONE\*\* | Grey | THE PLAYER THAT FIRST SHARES WITH YOU MUST WIN | - |
+
+| \*\*CLOWN\*\* | Blue / Red | SMILE... ALWAYS | - |
+
+| \*\*CONMAN\*\* | Blue / Red | COLOR SHARE » PRIVATE REVEAL | - |
+
+| \*\*COYBOY\*\* | Blue / Red | YOU CAN ONLY COLOR SHARE BECAUSE YOU'RE "COY" | - |
+
+| \*\*CRIMINAL\*\* | Blue / Red | CARD SHARE » "SHY" | - |
+
+| \*\*CUPID\*\* | Red | MAKE 2 PLAYERS "IN LOVE" ONCE PER GAME | (GOES WITH ERIS) |
+
+| \*\*DEALER\*\* | Blue / Red | CARD SHARE » "FOOLISH" | - |
+
+| \*\*DECOY\*\* | Grey | GET SHOT BY THE SNIPER | (LINKED WITH SNIPER, TARGET) |
+
+| \*\*DEMON\*\* | Blue / Red | LIE | (GOES WITH ANGEL) |
+
+| \*\*DOCTOR\*\* | Blue | CARD SHARE WITH THE PRESIDENT | (GOES WITH ENGINEER) |
+
+| \*\*DR. BOOM\*\* | Red | CARD SHARE WITH THE PRESIDENT AND INSTANTLY WIN | (GOES WITH TUESDAY KNIGHT) |
+
+| \*\*DRUNK\*\* | ???? | SOBER UP ON THE LAST ROUND | - |
+
+| \*\*ENFORCER\*\* | Blue / Red | FORCE PLAYERS TO CARD SHARE ONCE PER ROUND | - |
+
+| \*\*ENGINEER\*\* | Red | CARD SHARE WITH THE BOMBER | (GOES WITH DOCTOR) |
+
+| \*\*ERIS\*\* | Blue | MAKE 2 PLAYERS "IN HATE" ONCE PER GAME | (GOES WITH CUPID) |
+
+| \*\*GAMBLER\*\* | Grey | GUESS IF RED, BLUE, OR NEITHER TEAM WON | - |
+
+| \*\*HOT POTATO\*\* | Grey | YOU LOSE, BUT SHARING » SWAPPING | - |
+
+| \*\*IMMUNOLOGIST\*\* | Red | IMMUNE TO ALL ABILITIES AND "CONDITIONS" | - |
+
+| \*\*INTERN\*\* | Grey | BE WITH THE PRESIDENT | - |
+
+| \*\*INVINCIBLE\*\* | Blue | IMMUNE TO ALL ABILITIES AND "CONDITIONS" | - |
+
+| \*\*JULIET\*\* | Grey | BE WITH ROMEO AND THE BOMBER | (LINKED WITH ROMEO) |
+
+| \*\*LEPRECHAUN\*\* | Green | YOU WIN, YOU'RE "FOOLISH", AND SHARING » SWAPPING | - |
+
+| \*\*MAID\*\* | Grey | BE WITH THE BUTLER AND THE PRESIDENT | (LINKED WITH BUTLER) |
+
+| \*\*MARTYR\*\* | Red | IF THERE IS NO BOMBER, BE THE BOMBER | (GOES WITH PRESIDENT'S DAUGHTER) |
+
+| \*\*MASTERMIND\*\* | Grey | BE THE LEADER OF BOTH ROOMS AND AT THE END | - |
+
+| \*\*MAYOR\*\* | Blue / Red | PUBLIC REVEAL » 2 VOTES TO USURP IN AN EVEN ROOM | - |
+
+| \*\*MEDIC\*\* | Blue / Red | CARD SHARE » REMOVE ALL "CONDITIONS" | - |
+
+| \*\*MI6\*\* | Grey | CARD SHARE WITH THE PRESIDENT AND THE BOMBER | - |
+
+| \*\*MIME\*\* | Blue / Red | NEVER SPEAK | - |
+
+| \*\*MINION\*\* | Grey | YOU LOSE IF YOUR LEADER IS USURPED | - |
+
+| \*\*MISTRESS\*\* | Grey | BE WITH THE PRESIDENT, AVOID THE WIFE | (LINKED WITH WIFE) |
+
+| \*\*MOBY\*\* | Grey | AVOID THE BOMBER AND AHAB | (LINKED WITH AHAB) |
+
+| \*\*MUMMY\*\* | Blue / Red | CARD SHARE » "CURSED" | - |
+
+| \*\*NEGOTIATOR\*\* | Blue / Red | YOU CAN ONLY CARD SHARE BECAUSE YOU'RE "SAVVY" | - |
+
+| \*\*NUCLEAR TYRANT\*\* | Grey | YOU'RE "FOOLISH" DON'T CARD SHARE WITH THE PRIMARIES | - |
+
+| \*\*NURSE\*\* | Blue | IF THERE IS NO DOCTOR, BE THE DOCTOR | (GOES WITH TINKERER) |
+
+| \*\*PAPARAZZO\*\* | Blue / Red | IGNORE PRIVACY | - |
+
+| \*\*PARANOID\*\* | Blue / Red | YOU CAN ONLY CARD SHARE ONCE | - |
+
+| \*\*PRESIDENT\*\* | Blue | AVOID THE BOMBER | (GOES WITH BOMBER) |
+
+| \*\*PRESIDENT'S DAUGHTER\*\*| Blue | IF THERE IS NO PRESIDENT, BE THE PRESIDENT | (GOES WITH MARTYR) |
+
+| \*\*PRIVATE EYE\*\* | Grey | GUESS THE BURIED CARD | - |
+
+| \*\*PSYCHOLOGIST\*\* | Blue / Red | REMOVE PSI "CONDITIONS" | - |
+
+| \*\*QUEEN\*\* | Grey | AVOID THE PRESIDENT AND THE BOMBER | - |
+
+| \*\*RED SPY\*\* | Blue | YOU LOOK LIKE YOU ARE BLUE | - |
+
+| \*\*RED TEAM\*\* \*(Basic)\* | Red | GET THE BOMBER TO BE WITH THE PRESIDENT | (GOES WITH BLUE TEAM) |
+
+| \*\*RIVAL\*\* | Grey | AVOID THE PRESIDENT | - |
+
+| \*\*ROBOT\*\* | Grey | THE PLAYER THAT FIRST SHARES WITH YOU MUST LOSE | - |
+
+| \*\*ROMEO\*\* | Grey | BE WITH JULIET AND THE BOMBER | (LINKED WITH JULIET) |
+
+| \*\*SECURITY\*\* | Blue / Red | PERMANENT PUBLIC REVEAL » TACKLE A PLAYER | - |
+
+| \*\*SHY GUY\*\* | Blue / Red | NO SHARING OR REVEALS BECAUSE YOU'RE "SHY" | - |
+
+| \*\*SNIPER\*\* | Grey | SHOOT THE TARGET | (LINKED WITH DECOY, TARGET) |
+
+| \*\*SURVIVOR\*\* | Grey | AVOID THE BOMBER | (GOES WITH VICTIM) |
+
+| \*\*TARGET\*\* | Grey | DON'T GET SHOT BY THE SNIPER | (LINKED WITH DECOY, SNIPER) |
+
+| \*\*THUG\*\* | Blue / Red | CARD SHARE » "COY" | - |
+
+| \*\*TINKERER\*\* | Red | IF THERE IS NO ENGINEER, BE THE ENGINEER | (GOES WITH NURSE) |
+
+| \*\*TRAVELER\*\* | Grey | BE SENT AS A HOSTAGE A MAJORITY OF ROUNDS | - |
+
+| \*\*TUESDAY KNIGHT\*\* | Blue | CARD SHARE WITH THE BOMBER AND INSTANTLY WIN | (GOES WITH DR. BOOM) |
+
+| \*\*USURPER\*\* | Blue / Red | PERMANENT PUBLIC REVEAL » BECOME ROOM LEADER | - |
+
+| \*\*VICTIM\*\* | Grey | BE WITH THE BOMBER | - |
+
+| \*\*WIFE\*\* | Grey | BE WITH THE PRESIDENT, AVOID THE MISTRESS | (LINKED WITH MISTRESS) |
+
+| \*\*ZOMBIE\*\* | Green | MAKE ALL SURVIVORS ZOMBIES | - |
+
+\---

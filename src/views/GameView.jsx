@@ -602,6 +602,9 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
       (a, b) => parseInt(a.slice(-3)) - parseInt(b.slice(-3)),
     );
 
+    // Official rules: color reveal only allowed with more than 10 players
+    const allowColorReveal = players.current.length > 10;
+
     game.current = {
       ...gameData,
       ...game_data,
@@ -613,11 +616,13 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
       paused: false,
       timeToReveal: false,
       pauseGameIndex: 0,
+      pauseGameChoices: {},
       votes: {},
       votingPhase: false,
       hostageSelectionPhase: false,
       selectedHostages: { 1: [], 2: [] },
       leaders: {},
+      color_reveal: allowColorReveal,
     };
 
     manuallyUpdateRef();
@@ -667,15 +672,9 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
     const totalRounds = game.current.rounds.length;
     const endedRounds = game.current.rounds.filter((r) => r?.ended).length;
 
-    if (totalRounds === endedRounds) {
-      // According to official rules, no hostage exchange at the end of the final round.
-      game.current.votingPhase = false;
-      game.current.hostageSelectionPhase = false;
-      nextRound(); // Immediately advance to boom phase
-      return;
-    }
-
-    // Start voting phase for leader selection
+    // Official rules: "After the last hostage exchange, the game ends."
+    // ALL rounds including the final round have hostage exchange.
+    // Start voting phase for leader selection before hostage exchange.
     game.current.votingPhase = true;
     game.current.votes = {};
   }
@@ -695,6 +694,8 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
 
       Object.entries(votes).forEach(([voterId, candidateId]) => {
         const voter = players.current.find((p) => p.id === voterId);
+        // Official rule: "A player can never appoint themselves."
+        if (voterId === candidateId) return;
         if (
           voter?.room === roomNumber &&
           roomVotes[candidateId] !== undefined
@@ -702,6 +703,9 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
           roomVotes[candidateId]++;
         }
       });
+
+      // Official rule: need MAJORITY (more than half) to become leader
+      const majorityThreshold = Math.floor(playersInRoom.length / 2) + 1;
 
       let maxVotes = 0;
       let leaderId = null;
@@ -712,7 +716,16 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
         }
       });
 
-      if (leaderId) newLeaders[roomNumber] = leaderId;
+      // Only set leader if they reached majority, or keep previous leader
+      if (leaderId && maxVotes >= majorityThreshold) {
+        newLeaders[roomNumber] = leaderId;
+      } else if (game.current.leaders?.[roomNumber]) {
+        // Keep existing leader if no majority reached
+        newLeaders[roomNumber] = game.current.leaders[roomNumber];
+      } else if (leaderId) {
+        // Fallback: if no previous leader exists, accept highest vote (first round)
+        newLeaders[roomNumber] = leaderId;
+      }
     });
 
     game.current.leaders = newLeaders;
@@ -893,6 +906,12 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
         manuallyUpdateRef();
       }
     },
+    "set-pause-game-choice": (cardId, choiceData) => {
+      // Store choices made during pause game (Gambler prediction, Sniper target, Private Eye guess)
+      if (!game.current.pauseGameChoices) game.current.pauseGameChoices = {};
+      game.current.pauseGameChoices[cardId] = choiceData;
+      manuallyUpdateRef();
+    },
     "force-start-game": () => {
       game.current.phase = "rounds";
       nextRound();
@@ -981,6 +1000,8 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
       }
     },
     "cast-vote": (voterId, candidateId) => {
+      // Official rule: "A player can never appoint themselves."
+      if (voterId === candidateId) return;
       if (!game.current.votes) game.current.votes = {};
       game.current.votes = { ...game.current.votes, [voterId]: candidateId };
 
@@ -1014,6 +1035,10 @@ function HostGame({ me, setMe, code, setScreen, devMode }) {
       manuallyUpdateRef();
     },
     "toggle-hostage": (roomId, playerId) => {
+      // Official rule: "LEADERS CAN'T BE HOSTAGES."
+      const leaderId = game.current.leaders?.[roomId];
+      if (playerId === leaderId) return;
+
       if (!game.current.selectedHostages)
         game.current.selectedHostages = { 1: [], 2: [] };
 
@@ -1393,11 +1418,165 @@ function Game({
             }
           }
 
+          // Auto-calculate grey character win conditions
+          const greyResults = {};
+          const choices = game?.pauseGameChoices || {};
+          playersList.forEach((p) => {
+            if (!p.card?.startsWith("g")) return;
+            const cardData = getCardFromId(p.card);
+            if (!cardData) return;
+            switch (p.card) {
+              case "g001": // Agoraphobe — never left initial room (tracked socially, mark as "check")
+                greyResults[p.card] = {
+                  name: cardData.name,
+                  result: "check",
+                  player: p.name,
+                };
+                break;
+              case "g004": // Bomb-Bot — same room as Bomber, President not
+                if (bomber && president) {
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result:
+                      p.room === bomber.room && p.room !== president.room
+                        ? "win"
+                        : "lose",
+                    player: p.name,
+                  };
+                }
+                break;
+              case "g008": // Gambler — predicted correctly?
+                if (choices["g008"]) {
+                  const prediction = choices["g008"];
+                  const correct =
+                    (prediction === "red" && winResult === "red_wins") ||
+                    (prediction === "blue" && winResult === "blue_wins") ||
+                    (prediction === "neither" && !winResult);
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: correct ? "win" : "lose",
+                    player: p.name,
+                    detail: prediction,
+                  };
+                }
+                break;
+              case "g009": // Hot Potato — always loses
+                greyResults[p.card] = {
+                  name: cardData.name,
+                  result: "lose",
+                  player: p.name,
+                };
+                break;
+              case "g010": // Intern — same room as President
+                if (president) {
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: p.room === president.room ? "win" : "lose",
+                    player: p.name,
+                  };
+                }
+                break;
+              case "g019": // Private Eye — guessed buried card?
+                if (choices["g019"]) {
+                  const correct = choices["g019"] === game?.buriedCard;
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: correct ? "win" : "lose",
+                    player: p.name,
+                    detail: choices["g019"],
+                  };
+                }
+                break;
+              case "g020": // Queen — NOT with President or Bomber
+                if (president && bomber) {
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result:
+                      p.room !== president.room && p.room !== bomber.room
+                        ? "win"
+                        : "lose",
+                    player: p.name,
+                  };
+                }
+                break;
+              case "g021": // Rival — NOT with President
+                if (president) {
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: p.room !== president.room ? "win" : "lose",
+                    player: p.name,
+                  };
+                }
+                break;
+              case "g024": // Sniper — shot the Target?
+                if (choices["g024"]) {
+                  const targetPlayer = playersList.find(
+                    (tp) => tp.card === "g026",
+                  );
+                  const correct =
+                    targetPlayer && choices["g024"] === targetPlayer.id;
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: correct ? "win" : "lose",
+                    player: p.name,
+                    detail: choices["g024"],
+                  };
+                }
+                break;
+              case "g025": // Survivor — NOT with Bomber
+                if (bomber) {
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: p.room !== bomber.room ? "win" : "lose",
+                    player: p.name,
+                  };
+                }
+                break;
+              case "g026": // Target — Sniper did NOT shoot them
+                if (choices["g024"]) {
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: choices["g024"] !== p.id ? "win" : "lose",
+                    player: p.name,
+                  };
+                }
+                break;
+              case "g007": // Decoy — Sniper DID shoot them
+                if (choices["g024"]) {
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: choices["g024"] === p.id ? "win" : "lose",
+                    player: p.name,
+                  };
+                }
+                break;
+              case "g028": // Victim — same room as Bomber
+                if (bomber) {
+                  greyResults[p.card] = {
+                    name: cardData.name,
+                    result: p.room === bomber.room ? "win" : "lose",
+                    player: p.name,
+                  };
+                }
+                break;
+              default:
+                // Social/untrackable grey chars — mark for manual check
+                greyResults[p.card] = {
+                  name: cardData.name,
+                  result: "check",
+                  player: p.name,
+                };
+                break;
+            }
+          });
+
           setScreen(
             <RevealAllScreen
               card={card}
               buriedCard={getCardFromId(game?.buriedCard)}
               winResult={winResult}
+              greyResults={greyResults}
+              pauseGameChoices={choices}
               onLobby={
                 me?.id?.toUpperCase() === "HOST"
                   ? () => {
@@ -1447,7 +1626,14 @@ function Game({
               card={pauseGameCard}
               player={player}
               meId={me?.id}
+              allPlayers={players}
+              cardsInGame={game.cardsInGame}
+              buriedCard={game.buriedCard}
               onClick={() => execute("next-pause-game-number", [me?.id])}
+              onChoice={(cardId, choiceData) => {
+                execute("set-pause-game-choice", [cardId, choiceData]);
+                execute("next-pause-game-number", [me?.id]);
+              }}
             />,
           );
         }
@@ -2338,12 +2524,22 @@ function RadialNumberAnnouncement({ number = 0 }) {
   );
 }
 
-function PauseGameNumberScreen({ meId, onClick = () => {}, player }) {
+function PauseGameNumberScreen({
+  meId,
+  onClick = () => {},
+  onChoice,
+  player,
+  allPlayers = [],
+  cardsInGame = [],
+  buriedCard,
+}) {
   const { t } = useTranslation();
+  const [selection, setSelection] = useState(null);
 
   useEffect(() => {
     if (player.id !== playerData.id) {
       setPlayerChanged(true);
+      setSelection(null);
       setTimeout(() => {
         setPlayerData(player);
         setCard(getCardFromId(player?.card));
@@ -2351,6 +2547,136 @@ function PauseGameNumberScreen({ meId, onClick = () => {}, player }) {
       }, 1000);
     }
   }, [player]);
+
+  // Determine if this card needs a special action UI
+  const isGambler = card?.id === "g008";
+  const isPrivateEye = card?.id === "g019";
+  const isSniper = card?.id === "g024";
+  const needsChoice = isGambler || isPrivateEye || isSniper;
+
+  function handleConfirmChoice() {
+    if (!selection || !onChoice) return;
+    onChoice(card.id, selection);
+  }
+
+  // Build choice UI for the player who owns this card
+  function renderChoiceUI() {
+    if (isGambler) {
+      // Gambler: predict Red / Blue / Neither
+      return (
+        <div className="w-full flex flex-col items-center gap-3 mt-2 font-normal">
+          <p className="text-base text-white/80">
+            {t("gambler_predict") || "Which team do you think won?"}
+          </p>
+          <div className="flex gap-3 flex-wrap justify-center">
+            {["red", "blue", "neither"].map((team) => (
+              <button
+                key={team}
+                className={
+                  "btn btn-sm px-6 " +
+                  (selection === team
+                    ? "btn-accent ring-2 ring-white"
+                    : "btn-ghost border border-white/40")
+                }
+                onClick={() => setSelection(team)}
+              >
+                {team === "red"
+                  ? "🔴 Red"
+                  : team === "blue"
+                    ? "🔵 Blue"
+                    : "⚪ Neither"}
+              </button>
+            ))}
+          </div>
+          {selection && (
+            <button
+              className="btn btn-accent btn-wide mt-2"
+              onClick={handleConfirmChoice}
+            >
+              ✅ {t("confirm") || "Confirm"}
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    if (isPrivateEye) {
+      // Private Eye: guess the buried card from cards in game
+      const allCardIds = cardsInGame || [];
+      const cardOptions = allCardIds
+        .map((id) => getCardFromId(id))
+        .filter(Boolean);
+      return (
+        <div className="w-full flex flex-col items-center gap-3 mt-2 font-normal">
+          <p className="text-base text-white/80">
+            {t("private_eye_guess") || "Guess the buried card:"}
+          </p>
+          <div className="flex gap-2 flex-wrap justify-center max-h-48 overflow-y-auto px-2">
+            {cardOptions.map((c) => (
+              <button
+                key={c.id}
+                className={
+                  "btn btn-xs px-3 " +
+                  (selection === c.id
+                    ? "btn-accent ring-2 ring-white"
+                    : "btn-ghost border border-white/40")
+                }
+                onClick={() => setSelection(c.id)}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
+          {selection && (
+            <button
+              className="btn btn-accent btn-wide mt-2"
+              onClick={handleConfirmChoice}
+            >
+              ✅ {t("confirm") || "Confirm"}
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    if (isSniper) {
+      // Sniper: select a player to shoot
+      const shootablePlayers = allPlayers.filter((p) => p.id !== player.id);
+      return (
+        <div className="w-full flex flex-col items-center gap-3 mt-2 font-normal">
+          <p className="text-base text-white/80">
+            {t("sniper_shoot") || "Select a player to shoot:"}
+          </p>
+          <div className="flex gap-2 flex-wrap justify-center max-h-48 overflow-y-auto px-2">
+            {shootablePlayers.map((p) => (
+              <button
+                key={p.id}
+                className={
+                  "btn btn-sm px-4 " +
+                  (selection === p.id
+                    ? "btn-accent ring-2 ring-white"
+                    : "btn-ghost border border-white/40")
+                }
+                onClick={() => setSelection(p.id)}
+              >
+                🎯 {p.name}
+              </button>
+            ))}
+          </div>
+          {selection && (
+            <button
+              className="btn btn-accent btn-wide mt-2"
+              onClick={handleConfirmChoice}
+            >
+              ✅ {t("confirm") || "Confirm"}
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  }
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-start pt-20 screen-bg-orange font-extrabold text-title text-white drop-shadow-md text-3xl gap-3 text-center overflow-y-scroll overflow-hidden scrollbar-hide">
@@ -2393,9 +2719,13 @@ function PauseGameNumberScreen({ meId, onClick = () => {}, player }) {
               card={card}
               color={card.color}
             />
-            <button className="btn-accent btn btn-wide" onClick={onClick}>
-              {t("select")}
-            </button>
+            {needsChoice ? (
+              renderChoiceUI()
+            ) : (
+              <button className="btn-accent btn btn-wide" onClick={onClick}>
+                {t("select")}
+              </button>
+            )}
           </div>
         ) : (
           <div className="w-full flex flex-col items-center p-4 mt-8 gap-2">
@@ -2430,6 +2760,8 @@ function RevealAllScreen({
   card,
   buriedCard,
   winResult,
+  greyResults = {},
+  pauseGameChoices = {},
 }) {
   const { setMenu } = useContext(PageContext);
   const { t } = useTranslation();
@@ -2538,6 +2870,44 @@ function RevealAllScreen({
                 card={buriedCard}
                 color={buriedCard.color}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Grey Character Results */}
+        {Object.keys(greyResults).length > 0 && (
+          <div
+            style={{ animationDelay: "2800ms" }}
+            className="animate__animated animate__fadeInUp w-full max-w-sm px-4 mt-4"
+          >
+            <h3 className="text-xl mb-2">
+              ⭐ {t("grey_results") || "Grey Characters"}
+            </h3>
+            <div className="flex flex-col gap-1.5">
+              {Object.entries(greyResults).map(([cardId, data]) => (
+                <div
+                  key={cardId}
+                  className={
+                    "flex items-center justify-between p-2 rounded-lg text-sm font-semibold " +
+                    (data.result === "win"
+                      ? "bg-green-500/30 text-green-300"
+                      : data.result === "lose"
+                        ? "bg-red-500/30 text-red-300"
+                        : "bg-yellow-500/20 text-yellow-300")
+                  }
+                >
+                  <span className="truncate">
+                    {data.player} ({data.name})
+                  </span>
+                  <span className="text-xs ml-2 whitespace-nowrap">
+                    {data.result === "win"
+                      ? "✅ WIN"
+                      : data.result === "lose"
+                        ? "❌ LOSE"
+                        : "❓ CHECK"}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}

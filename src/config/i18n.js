@@ -189,6 +189,11 @@ const dict = {
     cards_in_game: "จำนวนการ์ดในเกม:",
     buried_card_workbench: "การ์ดถูกคว่ำ:",
     sober_card: "การ์ดคนปกติ:",
+    gambler_predict: "คุณคิดว่าทีมไหนชนะ?",
+    sniper_shoot: "เลือกผู้เล่นที่จะยิง:",
+    private_eye_guess: "ทายการ์ดที่ถูกฝังไว้:",
+    grey_results: "ผลตัวละครสีเทา",
+    confirm: "ยืนยัน",
   },
   en: {
     play: "Play",
@@ -377,6 +382,11 @@ const dict = {
     cards_in_game: "Cards in game:",
     buried_card_workbench: "Buried card:",
     sober_card: "Sober card:",
+    gambler_predict: "Which team do you think won?",
+    sniper_shoot: "Select a player to shoot:",
+    private_eye_guess: "Guess the buried card:",
+    grey_results: "Grey Characters",
+    confirm: "Confirm",
   },
 };
 
